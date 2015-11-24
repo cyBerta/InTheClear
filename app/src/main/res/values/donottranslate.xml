@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="support_email_address" translatable="false">support@guardianproject.info</string>
+    <!-- strings used as IDs -->
+    <string name="remote_service_start_id" translatable="false">Remote Service Start Id</string>
+
+</resources>

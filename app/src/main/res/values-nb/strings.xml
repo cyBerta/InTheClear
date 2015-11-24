@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">InTheClear</string>
+  <!--the strings below used to be in itc_strings.xml and where used on Blackberry and J2ME also-->
+  <string name="KEY_OK">OK</string>
+  <string name="KEY_DETAILS">Detaljer</string>
+  <string name="KEY_NONE">Ingen</string>
+  <string name="KEY_FINISH">Sluttfør</string>
+  <string name="KEY_WIPE_SETTINGS_TITLE">InTheClear Innstillinger for datafjerning</string>
+  <string name="KEY_PANIC_TITLE">Panikk!</string>
+  <string name="KEY_PANIC_MSG_TITLE">Panikk-melding:</string>
+  <string name="KEY_PANIC_PROGRESS_1">Sender din panikk-melding:</string>
+  <string name="KEY_PANIC_PROGRESS_2">Sletter valgt data fra telefonen din…</string>
+  <string name="KEY_PANIC_PROGRESS_3">Telefonen din vil fortsette å gå i Panikk! med 45 sekunders mellomrom til du avbryter denne prosessen…</string>
+  <string name="KEY_PANIC_BTN_PANIC">Panikk!</string>
+  <string name="KEY_PANIC_MENU_CANCEL">Avbryt Panikk!</string>
+  <string name="KEY_PANIC_COUNTDOWNMSG">Panikk! om</string>
+  <string name="KEY_PANIC_TITLE_MAIN">Panikk! aktivert</string>
+  <string name="KEY_PANIC_RETURN">Velg for å avbrytte Panikk!</string>
+  <string name="KEY_PANIC_MSG_FROM">SMS-data</string>
+  <string name="KEY_PANIC_MSG_CID">cid:</string>
+  <string name="KEY_PANIC_MSG_LAC">lac:</string>
+  <string name="KEY_PANIC_MSG_MCC">mcc:</string>
+  <string name="KEY_PANIC_MSG_MNC">mnc:</string>
+  <string name="KEY_PANIC_MSG_LATLNG">lat/lng:</string>
+  <string name="KEY_PANIC_MSG_TIMESTAMP">ts:</string>
+  <string name="KEY_PANIC_WIPE_TITLE">Data som skal slettes:</string>
+  <string name="KEY_PREF_LANGUAGE_TITLE">Språk</string>
+  <string name="KEY_PREF_LANGUAGE_SUMMARY">Hvilket språk skal InTheClear vise?</string>
+  <string name="KEY_PREF_CONFIG_PANIC_TITLE">PANIKK! innstillinger</string>
+  <string name="KEY_PREF_CONFIG_WIPE_TITLE">SLETTING innstillinger</string>
+  <string name="KEY_PREF_ENTERPHONES_TITLE">Gjør endringer i vennekrets</string>
+  <string name="KEY_PREF_ENTERPHONES">Skriv inn mobiltelefon-nummer(e), inndelt med komma, til dem du vil varsle via SMS</string>
+  <string name="KEY_PREF_ENTERPANICMSG_TITLE">Din PANIKK! -beskjed</string>
+  <string name="KEY_PREF_ENTERPANICMSG">Skriv inn din PANIKK! -beskjed her.</string>
+  <string name="KEY_PREF_WIPECONTACTS">Tøm kontaktliste</string>
+  <string name="KEY_PREF_WIPEPHOTOS">Slett alle Bilder/Videoer</string>
+  <string name="KEY_PREF_WIPEFILES">Slett SD-kort</string>
+  <string name="KEY_PREF_WIPEDIALOG">Velg hvilke mapper på SD-kortet som skal slettes når du trykker på PANIKK!-knappen</string>
+  <string name="KEY_PREF_WIPECALLLOG">Slett din samtaleliste</string>
+  <string name="KEY_PREF_WIPECALENDAR">Slett din kalenderdata</string>
+  <string name="KEY_PREF_WIPESMS">Slett SMS-logg</string>
+  <string name="KEY_PREF_ONETOUCH">1-trykks Panikk?</string>
+  <string name="KEY_PREF_ONETOUCH_DIALOG">Trykk her hvis du IKKE vil ha bekreftelse før Panik! trår i kraft. Ellers må du bekrefte før Panikk! blir utført.</string>
+  <string name="KEY_MAIN_TOPREFS">Oppsett</string>
+  <string name="KEY_MAIN_TOWIZARD">Oppsetts-veiviser</string>
+  <string name="KEY_EMERGENCY_SMS_TITLE">Nød-SMS</string>
+  <string name="KEY_EMERGENCY_SMS_INTRO">Velg Send for å begynne gjentagende kringkasting av din nød-SMS til du manuelt stopper den eller din telefon mangler tilkobling til nett eller batterikapasitet. Alternativt kan du endre din melding og mottaker(e) under.</string>
+  <string name="KEY_EMERGENCY_SMS_SEND_BUTTON">Send nød-SMS</string>
+  <string name="KEY_EMERGENCY_SMS_RECIPIENT_MOBILE">Motaker
+mobil #(s)</string>
+  <string name="KEY_EMERGENCY_SMS_EMERGENCY_MSG">Nødmelding</string>
+  <string name="KEY_SHOUT_MENU_CANCEL">Avbryt anrop!</string>
+  <string name="KEY_SHOUT_MENU_RESTOREDEFAULT">Gjenopprett forvalgt melding</string>
+  <string name="KEY_SHOUT_PREFSFAIL">Du har ingen vennekrets. Sjekk dine innstillinger.</string>
+  <string name="KEY_SHOUT_COUNTDOWNMSG">Sender nød-SMS om</string>
+  <string name="KEY_SECONDS">sekunder…</string>
+  <string name="KEY_SHOUT_COUNTDOWNCANCEL">Avbryt denne nød-SMS-en</string>
+  <string name="KEY_WIPE_ACTIVITY_TITLE">Datasletting</string>
+  <string name="KEY_WIPE_WIPECONTACTS">Slett kontaktliste</string>
+  <string name="KEY_WIPE_WIPEPHOTOS">Slett bilder</string>
+  <string name="KEY_WIPE_CALLLOG">Slett anropsliste</string>
+  <string name="KEY_WIPE_SMS">Slett SMS-logg</string>
+  <string name="KEY_WIPE_CALENDAR">Slett kalender-data</string>
+  <string name="KEY_WIPE_SDCARD">Slett innhold på SD-kort</string>
+  <string name="KEY_WIPE_CONFIRMSELECT">Ferdig</string>
+  <string name="KEY_WIZARD_NEXT">Neste</string>
+  <string name="KEY_WIZARD_BACK">Tilabake</string>
+  <string name="KEY_WIZARD_TESTING_SMS_TITLE">Tester nød-SMS</string>
+  <string name="KEY_WIZARD_PLEASE_WAIT">Vennligst vent…</string>
+  <string-array name="WIZARD_TITLES">
+    <item>InTheClear-oppsett</item>
+    <item>Tester nød-SMS</item>
+    <item>Nød-SMS-oppsett</item>
+    <item>Dataslettings-oppsett</item>
+    <item>Èn-klikks panikkoppsett</item>
+    <item>InTheClear oppsett ferdig</item>
+  </string-array>
+  <string-array name="WIZARD_TEXT">
+    <item>InTheClear hjelper deg med økt datasikkerhet i situasjoner som er vanskelige ved å sende nød-SMS-meldinger samt å slette data fra telefonen på kommando.
+
+Denne engangsveiviseren vil hjelpe deg å sette opp telefonen slik at den virker som tiltenkt i nødsituasjoner.</item>
+    <item>InTheClear sender nød-SMS-er til fritt valg av mottaker(e). For å bekrefte at nød-SMS kan sendes, send først en melding til deg selv. Bare skriv inn ditt telefonnummer og trykk Send.</item>
+    <item>Nå som vi har testet sending av nød-SMS kan vi spesifisere innhold og mottakere. For å sende til flere mottakere, del inn telefonnummer med komma.</item>
+    <item>InTheClear kan slette data fra telefonminne når du ber om det. Velg hvilken data du vil slette under</item>
+    <item> Èn-trykks-panikk er en funksjon i InTheClear som aktiverer både nød-SMS og sletting av data. For å forhindre uhell er vanlig oppførsel at dette må bekreftes ved igangsettelse, før det trår i kraft. Du kan fjerne denne forespørselen nedenfor.</item>
+    <item> Takk for at du setter opp InTheClear. Husk at du kan aktivere dens funksjoner manuelt inne i programmet, eller kjøre dem med en gang ved bruk av snarveien: Èn-klikks-panikk.</item>
+  </string-array>
+  <string name="WIZARD_YOUR_MOBILE_NUMBER">Din mobil #</string>
+  <string name="WIZARD_SEND_TEST">Send test</string>
+  <string name="WIZARD_CONFIRMATION_SMSTEST_TITLE">Suksess!</string>
+  <string name="WIZARD_CONFIRMATION_SMSTEST_FAIL_TITLE">Test-SMS feilet</string>
+  <string name="WIZARD_SMS_TEST_FAILURES">InTheClear nød-SMSer sendes som hvilken som helst annen SMS.
+Mulige årsaker til feil kan være:
+
+Dårlig trådløsforbindelse
+Ingen taletid eller kreditt
+Manglende eller ødelagt SIM-kort
+
+Hvis du har sjekket alle overnevnte grunner og SMS-en fremdeles ikke sendes: det kan hende at InTheClear ikke støttes på din enhet. Vennligst send oss epost om det til:
+</string>
+  <string name="WIZARD_CONFIRMATION_SMSTEST">Det ser du som meldingen din gikk gjennom. Vennligst sjekk for å være sikker.</string>
+  <string name="WIZARD_CONFIRMATION_SMSTEST_FAIL">Det later til at din test-SMS ikke ble sendt.
+Se detaljer for ytterligere info.</string>
+  <string name="WIZARD_RECIPIENT_MOBILE_NUMBERS">Mottager
+Mobil #(s)</string>
+  <string name="WIZARD_EMERGENCY_MESSAGE">Din
+Nød
+Melding</string>
+  <string name="WIZARD_WIPE_WARNING">Vær forsiktig! Du kan ikke gjenopprette data når den først er slettet.</string>
+  <string name="WIZARD_SELECT_DATA_BUTTON">Velg data for sletting</string>
+  <string name="WIZARD_ONE_TOUCH_PANIC_DESCRIPTION">Når Èn-trykks -panikk er aktivert, LA VÆRE å spørre meg om bekreftelse før kjøring.</string>
+  <string name="KEY_WIZARD_SMSTESTMSG">Dette er en test-melding fra InTheClear</string>
+</resources>

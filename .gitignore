@@ -18,4 +18,4 @@ BUILD.MF
 .idea
 .gradle
 *.iml
-app/build
+app/build/

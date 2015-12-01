@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
-
-    <item
-        android:id="@+id/toHome"
-        android:title="@string/home"/>
-
-</menu><!-- From: file:/Users/l/Sourcecode/gefrickel/InTheClear/app/src/main/res/menu/wizard_menu.xml -->

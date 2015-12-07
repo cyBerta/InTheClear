@@ -65,7 +65,7 @@ public class PanicWidgetConfigureActivity extends Activity {
 
             // It is the responsibility of the configuration activity to update the app widget
             AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-            PanicWidget.updateAppWidget(context, appWidgetManager, mAppWidgetId);
+            //PanicWidget.updateAppWidget(context, appWidgetManager, mAppWidgetId);
 
             // Make sure we pass back the original appWidgetId
             Intent resultValue = new Intent();

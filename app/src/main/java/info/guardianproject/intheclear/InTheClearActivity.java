@@ -145,10 +145,10 @@ public class InTheClearActivity extends Activity implements OnClickListener {
         if (v == logoPanic) {
             launchPanic();
         }
-        else if (v == logoITC) {
+       /* else if (v == logoITC) {
             Log.d(TAG, "Hello World");
             launchWidgetConfigureActivity();
-        }
+        }*/
     }
 
     public class ImageAdapter extends BaseAdapter

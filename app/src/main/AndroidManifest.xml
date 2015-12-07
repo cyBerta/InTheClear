@@ -121,21 +121,24 @@
             android:name=".WipeService"
             android:enabled="true" />
 
-        <receiver android:name=".PanicWidget" >
+        <receiver
+            android:name=".PanicWidget"
+            android:label="Panic Button"
+            android:icon="@drawable/btn_panic">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
 
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/panic_widget_info" />
+                android:resource="@xml/panic_widget_info"/>
         </receiver>
 
-        <activity android:name=".PanicWidgetConfigureActivity" >
+    <!--    <activity android:name=".PanicWidgetConfigureActivity" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
-        </activity>
+        </activity>-->
     </application>
 
 </manifest>

@@ -19,6 +19,13 @@ public class PanicWidget extends AppWidgetProvider {
     private static final String TAG = "widget";
 
     @Override
+    public void onReceive(Context context, Intent intent) {
+        super.onReceive(context, intent);
+    }
+
+
+
+    @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         // There may be multiple widgets active, so update all of them
         Log.d(TAG, "onUpdate called");
@@ -35,11 +42,16 @@ public class PanicWidget extends AppWidgetProvider {
 
             //views.setTextViewText(R.id.appwidget_text, widgetText);
 
-            Intent intent = new Intent(context, PanicWidget.class);
-            intent.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
-            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, allPanicWidgetsIds);
+            Intent intent2 = new Intent(context, PanicWidget.class);
+            intent2.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE);
+            intent2.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, allPanicWidgetsIds);
 
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            Intent intent = new Intent(context, PanicActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            context.startActivity(intent);
+
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent2, PendingIntent.FLAG_UPDATE_CURRENT);
             views.setOnClickPendingIntent(R.id.widgetButton, pendingIntent);
 
             // Instruct the widget manager to update the widget

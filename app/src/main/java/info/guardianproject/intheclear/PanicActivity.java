@@ -103,9 +103,13 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
                         cancelPanic();
                     }
                 }
-                );
+        );
         panicStatusDialog.setMessage(currentPanicStatus);
         panicStatusDialog.setTitle(getResources().getString(R.string.KEY_PANIC_BTN_PANIC));
+
+     /*   if(savedInstanceState != null && savedInstanceState.get("startFromWidget") != null &&  savedInstanceState.getInt("startFromWidget", 0) != 0){
+            doPanic();
+        }*/
 
     }
 

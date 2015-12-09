@@ -46,7 +46,7 @@ public class PanicService extends IntentService {
     ShoutController shoutController;
 
     ArrayList<File> selectedFolders;
-    String userDisplayName, defaultPanicMsg, configuredFriends;
+    String /*userDisplayName,*/ defaultPanicMsg, configuredFriends;
 
     @Override
     public void onCreate() {
@@ -63,7 +63,7 @@ public class PanicService extends IntentService {
         prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 
         selectedFolders = new ArrayList<File>();
-        userDisplayName = prefs.getString(ITCConstants.Preference.USER_DISPLAY_NAME, "");
+//        userDisplayName = prefs.getString(ITCConstants.Preference.USER_DISPLAY_NAME, ""); //nicht genutzt bisher
         configuredFriends = prefs.getString(ITCConstants.Preference.CONFIGURED_FRIENDS, "");
     }
 
@@ -150,18 +150,20 @@ public class PanicService extends IntentService {
                 updatePanicUi(getString(R.string.KEY_PANIC_PROGRESS_3));
             } else {
                 Log.d(ITCConstants.Log.ITC, "SOMETHING WAS WRONG WITH WIPE");
+               // Todo: PopUp-Benachrichtigung falls nicht klappt! & frage ob isPanicing = false soll?
             }
         else {
             Log.d(ITCConstants.Log.ITC, "SOMETHING WAS WRONG WITH SHOUT");
+            // Todo: PopUp-Benachrichtigung falls nicht klappt! & frage ob isPanicing = false soll?
         }
     }
 
     private void showNotification() {
-        backToPanic.putExtra("PanicCount", panicCount);
-        backToPanic.putExtra("ReturnFrom", ITCConstants.Panic.RETURN);
+        backToPanic.putExtra("PanicCount", panicCount); //Konstante draus machen
+        backToPanic.putExtra("ReturnFrom", ITCConstants.Panic.RETURN); //Konstante draus machen
         backToPanic.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-        Notification n = new Notification(
+        Notification n = new Notification( //Todo: Notification umbauen
                 R.drawable.panic,
                 getString(R.string.KEY_PANIC_TITLE_MAIN),
                 System.currentTimeMillis()
@@ -174,7 +176,7 @@ public class PanicService extends IntentService {
                 PendingIntent.FLAG_UPDATE_CURRENT
                 );
 
-        n.setLatestEventInfo(
+        n.setLatestEventInfo(  //Todo: Notification umbauen
                 this,
                 getString(R.string.KEY_PANIC_TITLE_MAIN),
                 getString(R.string.KEY_PANIC_RETURN),

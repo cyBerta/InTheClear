@@ -178,7 +178,7 @@ public class ITCConstants {
         public static final String DEFAULT_LANGUAGE = "DefaultLanguage";
         public static final String WIPE_SELECTOR = "wipe_selector";
         public static final String FOLDER_SELECTOR = "folder_selector";
-        public static final String USER_DISPLAY_NAME = "UserDisplayName";
+        public static final String USER_DISPLAY_NAME = "UserDisplayName"; //not used!
         public static final String USER_DISPLAY_LOCATION = "UserDisplayLocation";
         public static final String CONFIGURED_FRIENDS = "ConfiguredFriends";
         public static final String DEFAULT_PANIC_MSG = "DefaultPanicMsg";

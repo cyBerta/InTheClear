@@ -194,6 +194,10 @@ public class ITCConstants {
         public static final String IS_VIRGIN_USER = "IsVirginUser";
     }
 
+    public static class Widget {
+        public static final String START_PANIC_ACTION = "StartPanicAction";
+    }
+
     public static class Log {
         public static final String ITC = "InTheClear";
     }

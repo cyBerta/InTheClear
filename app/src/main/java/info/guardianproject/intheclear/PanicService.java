@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -163,25 +164,25 @@ public class PanicService extends IntentService {
         backToPanic.putExtra("ReturnFrom", ITCConstants.Panic.RETURN); //Konstante draus machen
         backToPanic.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-        Notification n = new Notification( //Todo: Notification umbauen
-                R.drawable.panic,
-                getString(R.string.KEY_PANIC_TITLE_MAIN),
-                System.currentTimeMillis()
-                );
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
 
-        PendingIntent pi = PendingIntent.getActivity(
+
+       PendingIntent pi = PendingIntent.getActivity(
                 this,
                 ITCConstants.Results.RETURN_FROM_PANIC,
                 backToPanic,
                 PendingIntent.FLAG_UPDATE_CURRENT
-                );
+        );
 
-        n.setLatestEventInfo(  //Todo: Notification umbauen
-                this,
-                getString(R.string.KEY_PANIC_TITLE_MAIN),
-                getString(R.string.KEY_PANIC_RETURN),
-                pi
-                );
+//Todo: möglich noch die Zeit zu setzen? aber vielleicht überflüssig
+        notificationBuilder.
+                setContentIntent(pi).
+                setSmallIcon(R.drawable.panic).
+                setAutoCancel(true). //muss auf true, sonst verschwindet Notification nicht!
+                setContentText(this.getResources().getString(R.string.KEY_PANIC_RETURN)).
+                setContentTitle(this.getResources().getString(R.string.KEY_PANIC_TITLE));
+
+        Notification n = notificationBuilder.build();
 
         nm.notify(R.string.remote_service_start_id, n);
     }
@@ -190,6 +191,6 @@ public class PanicService extends IntentService {
     public void onDestroy() {
         super.onDestroy();
         stopRunnables();
-        nm.cancel(R.string.remote_service_start_id);
+ //       nm.cancel(R.string.remote_service_start_id); // sonst verschwindet notification zu schnell
     }
 }

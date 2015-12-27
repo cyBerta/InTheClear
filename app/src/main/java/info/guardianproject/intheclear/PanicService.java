@@ -52,12 +52,23 @@ public class PanicService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
+  /*      nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+       // if (!TextUtils.isEmpty(PhoneInfo.getIMEI()))
+            shoutController = new ShoutController(getBaseContext());
+        backToPanic = new Intent(this, PanicActivity.class);
+        alignPreferences();
+        showNotification();*/
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
         nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (!TextUtils.isEmpty(PhoneInfo.getIMEI()))
             shoutController = new ShoutController(getBaseContext());
         backToPanic = new Intent(this, PanicActivity.class);
         alignPreferences();
         showNotification();
+        return super.onStartCommand(intent, flags, startId);
     }
 
     private void alignPreferences() {
@@ -128,6 +139,7 @@ public class PanicService extends IntentService {
 
     private void stopRunnables() {
         if (isPanicing) {
+            Log.d(TAG, "stopRunnables as isPanicing==true!");
             if (shoutTimerTask != null)
                 shoutTimerTask.cancel();
             isPanicing = false;
@@ -142,7 +154,9 @@ public class PanicService extends IntentService {
         // TODO use TrustedIntents here to check trust
 
         resultReceiver = intent.getParcelableExtra(PanicActivity.RESULT_RECEIVER);
-
+        if (resultReceiver == null){
+            Log.d(TAG, "onHandleIntent resultReceiver == null!!");
+        }
         isPanicing = true;
         int shoutResult = shout();
         if (shoutResult == ITCConstants.Results.A_OK
@@ -153,10 +167,10 @@ public class PanicService extends IntentService {
                 Log.d(ITCConstants.Log.ITC, "SOMETHING WAS WRONG WITH WIPE");
                // Todo: PopUp-Benachrichtigung falls nicht klappt! & frage ob isPanicing = false soll?
             }
-        else {
-            Log.d(ITCConstants.Log.ITC, "SOMETHING WAS WRONG WITH SHOUT");
+        //else {
+        //    Log.d(ITCConstants.Log.ITC, "SOMETHING WAS WRONG WITH SHOUT");
             // Todo: PopUp-Benachrichtigung falls nicht klappt! & frage ob isPanicing = false soll?
-        }
+        // }
     }
 
     private void showNotification() {
@@ -189,8 +203,10 @@ public class PanicService extends IntentService {
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         stopRunnables();
- //       nm.cancel(R.string.remote_service_start_id); // sonst verschwindet notification zu schnell
+        Log.d(TAG, "PanicService onDestroy called");
+      //  nm.cancel(R.string.remote_service_start_id); // sonst verschwindet notification zu schnell
+        super.onDestroy();
+
     }
 }

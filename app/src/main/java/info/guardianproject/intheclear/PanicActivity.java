@@ -24,6 +24,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import info.guardianproject.intheclear.ITCConstants.Preference;
 import info.guardianproject.utils.EndActivity;
@@ -32,8 +33,10 @@ import java.util.ArrayList;
 
 public class PanicActivity extends Activity implements OnClickListener, OnDismissListener {
 
+    private static final String TAG = PanicActivity.class.getName();
     SharedPreferences sp;
     boolean oneTouchPanic;
+    boolean returnFromNotification;
 
     ListView listView;
     TextView shoutReadout, panicProgress, countdownReadout;
@@ -144,12 +147,29 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
         super.onStart();
         alignPreferences();
         if (!oneTouchPanic) {
-            panicControl.setText(this.getResources().getString(R.string.KEY_PANIC_BTN_PANIC));
-            panicControl.setOnClickListener(this);
+            if (!returnFromNotification){
+                panicControl.setText(this.getResources().getString(R.string.KEY_PANIC_BTN_PANIC));
+                panicControl.setOnClickListener(this);
+            } else {
+                Toast.makeText(this, "Panic Job canceled!", Toast.LENGTH_SHORT).show();
+                cancelPanic();
+                panicControl.setText(this.getResources().getString(R.string.KEY_PANIC_BTN_PANIC));
+                panicControl.setOnClickListener(this);
+            }
+
+
         } else {
-            panicControl.setText(getString(R.string.KEY_PANIC_MENU_CANCEL));
-            panicControl.setOnClickListener(this);
-            doPanic();
+            if (oneTouchPanic && !returnFromNotification){
+                panicControl.setText(getString(R.string.KEY_PANIC_MENU_CANCEL));
+                panicControl.setOnClickListener(this);
+                doPanic();
+            }
+            else {
+                Toast.makeText(this, "Panic Job canceled!", Toast.LENGTH_SHORT).show();
+                cancelPanic();
+                panicControl.setText(this.getResources().getString(R.string.KEY_PANIC_BTN_PANIC));
+                panicControl.setOnClickListener(this);
+            }
         }
     }
 
@@ -160,6 +180,7 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
 
         if (i.hasExtra("ReturnFrom") && i.getIntExtra("ReturnFrom", 0) == ITCConstants.Panic.RETURN) {
             // the app is being launched from the notification tray.
+            returnFromNotification = true;
 
         }
 
@@ -170,6 +191,7 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
     @Override
     public void onPause() {
         unregisterReceiver(killReceiver);
+
         super.onPause();
     }
 
@@ -198,12 +220,15 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
         if (panicState == ITCConstants.PanicState.IN_COUNTDOWN) {
             // if panic hasn't started, then just kill the countdown
             cd.cancel();
+            panicState = ITCConstants.PanicState.AT_REST;
         }
+        Log.d(TAG, "panicState: :" + panicState);
 
         toKill = new Intent(this, EndActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         finish();
         startActivity(toKill);
 
+//TODO: finish after startActivity?!
     }
 
     @Override

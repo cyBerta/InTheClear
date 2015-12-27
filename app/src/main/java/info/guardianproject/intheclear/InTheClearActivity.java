@@ -96,6 +96,7 @@ public class InTheClearActivity extends Activity implements OnClickListener {
     private void launchShout() {
         if (TextUtils.isEmpty(PhoneInfo.getIMEI())) {
             Toast.makeText(this, "This device is not a cell phone", Toast.LENGTH_SHORT).show();
+            //FIXME: NOT TRUE FOR CM11 on Samsung Galaxy
         }
         Intent i = new Intent(this, ShoutActivity.class);
         startActivity(i);

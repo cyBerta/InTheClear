@@ -7,17 +7,20 @@ import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Message;
 
+import android.util.Log;
 import info.guardianproject.intheclear.R;
 
 import java.util.Date;
 import java.util.StringTokenizer;
 
 public class ShoutController {
+    private static final String TAG = ShoutController.class.getName();
     Resources res;
     PhoneInfo pi;
     SMSSender sms;
     MovementTracker mt;
     Handler h;
+    Context c;
 
     public ShoutController(Context c) {
         h = new Handler() {
@@ -25,6 +28,7 @@ public class ShoutController {
             public void handleMessage(Message message) {
                 // TODO: handle confirmation of sent text
                 // perhaps broadcast this to calling activity?
+                Log.d(TAG, "handleMessage called");
             }
         };
 
@@ -32,7 +36,10 @@ public class ShoutController {
         pi = new PhoneInfo(c);
         sms = new SMSSender(c, h);
         mt = new MovementTracker(c);
+        this.c = c;
     }
+
+
 
     public static String buildShoutMessage(Resources res, String userMessage) {
         StringBuffer sbPanicMsg = new StringBuffer();
@@ -88,10 +95,17 @@ public class ShoutController {
 
     public void sendSMSShout(String recipients, String shoutMsg, String shoutData) {
         StringTokenizer st = new StringTokenizer(recipients, ",");
+        Log.d(TAG, "ShoutController/ sendSMSShout");
         while (st.hasMoreTokens()) {
             String recipient = st.nextToken().trim();
             sms.sendSMS(recipient, shoutMsg + "\n\n(1/2)");
             sms.sendSMS(recipient, shoutData + "\n\n(2/2)");
         }
+    }
+
+    public void tearDownSMSReceiver() {
+        try {
+            c.unregisterReceiver(sms.smsconfirm);
+        } catch(IllegalArgumentException e) {}
     }
 }

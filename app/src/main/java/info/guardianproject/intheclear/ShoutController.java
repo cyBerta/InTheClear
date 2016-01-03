@@ -105,6 +105,7 @@ public class ShoutController {
 
     public void tearDownSMSReceiver() {
         try {
+            Log.d(TAG, "unregister sms.smsconfirm receiver");
             c.unregisterReceiver(sms.smsconfirm);
         } catch(IllegalArgumentException e) {}
     }

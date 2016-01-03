@@ -18,4 +18,5 @@ BUILD.MF
 .idea
 .gradle
 *.iml
+app/*.iml
 app/build/

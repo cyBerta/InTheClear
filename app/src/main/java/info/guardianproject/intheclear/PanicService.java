@@ -15,12 +15,15 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import info.guardianproject.intheclear.ITCConstants.Preference;
+import info.guardianproject.panic.Panic;
 
 import java.io.File;
 import java.util.ArrayList;
 
 public class PanicService extends IntentService {
     private static final String TAG = PanicService.class.getName();
+    public static final String ACTION_START_ACTIVITY = PanicService.class.getName().concat(".ACTION_START_ACTIVITY");
+    public static final String ACTION_CANCEL = PanicService.class.getName().concat(".ACTION_CANCEL");
 
     public static final int UPDATE_PROGRESS = 0;
 
@@ -34,10 +37,8 @@ public class PanicService extends IntentService {
 
     final Handler h = new Handler();
     boolean isPanicing = false;
-
-    int panicCount = 0;
     boolean cancelCommunicationToPanicActivity = false;
-    public static final String ACTION_CANCEL = PanicService.class.getName().concat(".ACTION_CANCEL");
+    boolean firstShout = false;
 
     WipeService wipeService;
     ShoutController shoutController;
@@ -69,6 +70,7 @@ public class PanicService extends IntentService {
         if (intent.getAction() != null && intent.getAction().equals(PanicService.ACTION_CANCEL)){
             cancelCommunicationToPanicActivity = true;
         }
+
         Log.d(TAG, "onStartCommand called.  cancelCommunicationToPanicActivity: " + cancelCommunicationToPanicActivity);
         return super.onStartCommand(intent, flags, startId);
     }
@@ -81,6 +83,7 @@ public class PanicService extends IntentService {
         }
         int result = ITCConstants.Results.FAIL;
         updatePanicUi(getString(R.string.KEY_PANIC_PROGRESS_1));
+        showNotification(getString(R.string.KEY_PANIC_PROGRESS_1));
         updatePanicProgress(ITCConstants.PanicState.IN_SHOUT);
         h.post(new Runnable() {
 
@@ -96,7 +99,6 @@ public class PanicService extends IntentService {
                             ShoutController.buildShoutData(getResources())
                             );
                     Log.d(ITCConstants.Log.ITC, "this is a shout going out...");
-                    panicCount++;
                 } else {
                     Log.d(TAG, "it isn't panicing... ");
                         }
@@ -133,6 +135,9 @@ public class PanicService extends IntentService {
     private int wipe() {
         int result = ITCConstants.Results.FAIL;
         updatePanicUi(getString(R.string.KEY_PANIC_PROGRESS_2));
+        if (firstShout){
+            showNotification(getString(R.string.KEY_PANIC_PROGRESS_2));
+        }
         updatePanicProgress(ITCConstants.PanicState.IN_WIPE);
         new PIMWiper(
                 getBaseContext(),
@@ -172,12 +177,22 @@ public class PanicService extends IntentService {
             Log.d(TAG, "onHandleIntent resultReceiver == null!!");
         }
         isPanicing = true;
-        showNotification();
+        if (intent.getIntExtra(ITCConstants.UPDATE_PANICSTATE, -1) == ITCConstants.PanicState.IN_FIRST_SHOUT){
+            firstShout = true;
+        } else {
+            firstShout = false;
+        }
+
+        showNotification(null);
         int shoutResult = shout();
         if (shoutResult == ITCConstants.Results.A_OK
                 || shoutResult == ITCConstants.Results.NOT_AVAILABLE)
             if (wipe() == ITCConstants.Results.A_OK) {
                 updatePanicUi(getString(R.string.KEY_PANIC_PROGRESS_3));
+                //Run the ticker only at the first time
+                if (firstShout){
+                    showNotification(getString(R.string.KEY_PANIC_PROGRESS_3));
+                }
                 updatePanicProgress(ITCConstants.PanicState.IN_CONTINUED_PANIC);
             } else {
                 Log.d(ITCConstants.Log.ITC, "SOMETHING WAS WRONG WITH WIPE");
@@ -191,7 +206,7 @@ public class PanicService extends IntentService {
          }
     }
 
-    private void showNotification() {
+    private void showNotification(String notificationInfo) {
         Log.d(TAG, "showNotification called!");
         Intent backToPanic = newBackToPanicIntent(true);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
@@ -205,12 +220,17 @@ public class PanicService extends IntentService {
         );
 
 //Todo: möglich noch die Zeit zu setzen? aber vielleicht überflüssig
+
         notificationBuilder.
                 setContentIntent(pi).
                 setSmallIcon(R.drawable.panic).
                 setAutoCancel(true). //muss auf true, sonst verschwindet Notification nicht!
                 setContentText(this.getResources().getString(R.string.KEY_PANIC_RETURN)).
+               // setContentInfo(notificationInfo + " - contentInfo").
                 setContentTitle(this.getResources().getString(R.string.KEY_PANIC_TITLE));
+        if (notificationInfo != null && ! notificationInfo.isEmpty()){
+            notificationBuilder.setTicker(notificationInfo);
+        }
 
         Notification n = notificationBuilder.build();
 

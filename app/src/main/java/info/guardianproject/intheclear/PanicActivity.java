@@ -62,7 +62,7 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
                         panicState = resultData.getInt(ITCConstants.UPDATE_PANICSTATE);
                         if (panicState == ITCConstants.PanicState.IN_CONTINUED_PANIC) {
                             Log.d(TAG, "inContinuedPanic now...");
-                            executeNewCountdown(ITCConstants.Duration.CONTINUED_PANIC);
+                            executeNewCountdown(ITCConstants.Duration.CONTINUED_PANIC, false);
                         }
                     }
                     break;
@@ -327,12 +327,10 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
     }
 
     private void doPanic() {
-
-        executeNewCountdown(ITCConstants.Duration.COUNTDOWN);
-
+        executeNewCountdown(ITCConstants.Duration.COUNTDOWN, true);
     }
 
-    private void executeNewCountdown(final long countdownduration){
+    private void executeNewCountdown(final long countdownduration, final boolean firstShout){
         panicState = ITCConstants.PanicState.IN_COUNTDOWN;
         panicControl.setText(getString(R.string.KEY_PANIC_MENU_CANCEL));
         cd = new CountDownTimer(countdownduration,
@@ -342,7 +340,7 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
             @Override
             public void onFinish() {
                 // start the panic
-                startPanicService();
+                startPanicService(firstShout);
                 // scheduleAlarm();
                 // kill the activity doch lieber drin lassen?
                 //  killActivity();
@@ -365,8 +363,11 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
         cd.start();
     }
 
-    private void startPanicService(){
+    private void startPanicService(boolean firstShout){
         Intent intent = new Intent(getApplicationContext(), PanicService.class);
+        if (firstShout){
+            intent.putExtra(ITCConstants.UPDATE_PANICSTATE, ITCConstants.PanicState.IN_FIRST_SHOUT);
+        }
         intent.putExtra(RESULT_RECEIVER, resultReceiver);
         startService(intent);
     }

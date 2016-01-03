@@ -18,12 +18,9 @@ import info.guardianproject.intheclear.ITCConstants.Preference;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class PanicService extends IntentService {
     private static final String TAG = PanicService.class.getName();
-
 
     public static final int UPDATE_PROGRESS = 0;
 
@@ -64,6 +61,7 @@ public class PanicService extends IntentService {
         selectedFolders = new ArrayList<File>();
 //        userDisplayName = prefs.getString(ITCConstants.Preference.USER_DISPLAY_NAME, ""); //nicht genutzt bisher
         configuredFriends = prefs.getString(ITCConstants.Preference.CONFIGURED_FRIENDS, "");
+        defaultPanicMsg = prefs.getString(ITCConstants.Preference.DEFAULT_PANIC_MSG, "");
     }
 
     @Override
@@ -88,9 +86,9 @@ public class PanicService extends IntentService {
 
             @Override
             public void run() {
-                Log.d(TAG, "runMethode in Shout");
+                Log.d(TAG, "runMethod in Shout");
                 if (isPanicing) {
-                    Log.d(TAG, "if-condition in runMethode in Shout");
+                    Log.d(TAG, "if-condition in runMethod in Shout");
                     // TODO: this should actually be confirmed.
                     shoutController.sendSMSShout(
                             configuredFriends,
@@ -117,7 +115,7 @@ public class PanicService extends IntentService {
             resultReceiver.send(UPDATE_PROGRESS, bundle);
             Log.d(TAG, "panic progress message sent to resultReceiver: " + panicStateProgress);
         } else {
-            Log.d(TAG, "resultReceiver is null!");
+            Log.d(TAG, "resultReceiver is null OR cancelCommunicationToPanicActivity is true!");
         }
     }
 
@@ -149,16 +147,10 @@ public class PanicService extends IntentService {
     }
 
     private void stopRunnables() {
-        if (isPanicing) {
-            isPanicing = false;
-        }
+        isPanicing = false;
         shoutController.tearDownSMSReceiver();
-
         Log.d(TAG, "try to updatePanicProgress to ITCConstants.PanicState.AT_REST (" + ITCConstants.PanicState.AT_REST +")" );
         updatePanicProgress(ITCConstants.PanicState.AT_REST);
-
-
-
     }
 
 
@@ -230,9 +222,7 @@ public class PanicService extends IntentService {
         stopRunnables();
         Log.d(TAG, "PanicService onDestroy called");
      //   nm.cancel(R.string.remote_service_start_id); // sonst verschwindet notification zu schnell
-        if (cancelCommunicationToPanicActivity){
-            cancelCommunicationToPanicActivity = !cancelCommunicationToPanicActivity;
-        }
+        cancelCommunicationToPanicActivity = false;
         super.onDestroy();
 
     }

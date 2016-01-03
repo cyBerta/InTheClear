@@ -35,8 +35,6 @@ public class PanicService extends IntentService {
     private SharedPreferences prefs;
     private ResultReceiver resultReceiver;
 
-    TimerTask shoutTimerTask;
-    Timer t = new Timer();
     final Handler h = new Handler();
     boolean isPanicing = false;
 
@@ -86,36 +84,27 @@ public class PanicService extends IntentService {
         int result = ITCConstants.Results.FAIL;
         updatePanicUi(getString(R.string.KEY_PANIC_PROGRESS_1));
         updatePanicProgress(ITCConstants.PanicState.IN_SHOUT);
-
-        shoutTimerTask = new TimerTask() {
+        h.post(new Runnable() {
 
             @Override
             public void run() {
                 Log.d(TAG, "runMethode in Shout");
-                //h.post(new Runnable() {
-
-                //    @Override
-                //    public void run() {
-                        if (isPanicing) {
-                            Log.d(TAG, "if-condition in runMethode in Shout");
-                            // TODO: this should actually be confirmed.
-                            shoutController.sendSMSShout(
-                                    configuredFriends,
-                                    defaultPanicMsg,
-                                    ShoutController.buildShoutData(getResources())
-                                    );
-                            Log.d(ITCConstants.Log.ITC, "this is a shout going out...");
-                            panicCount++;
-                        } else {
-                            Log.d(TAG, "it isn't panicing... ");
+                if (isPanicing) {
+                    Log.d(TAG, "if-condition in runMethode in Shout");
+                    // TODO: this should actually be confirmed.
+                    shoutController.sendSMSShout(
+                            configuredFriends,
+                            defaultPanicMsg,
+                            ShoutController.buildShoutData(getResources())
+                            );
+                    Log.d(ITCConstants.Log.ITC, "this is a shout going out...");
+                    panicCount++;
+                } else {
+                    Log.d(TAG, "it isn't panicing... ");
                         }
-                //    }
-                //});
             }
 
-        };
-
-        t.schedule(shoutTimerTask, 0, ITCConstants.Duration.CONTINUED_PANIC);
+        });
         result = ITCConstants.Results.A_OK;
         return result;
     }
@@ -161,9 +150,6 @@ public class PanicService extends IntentService {
 
     private void stopRunnables() {
         if (isPanicing) {
-            Log.d(TAG, "stopRunnables as isPanicing==true!");
-            if (shoutTimerTask != null)
-                shoutTimerTask.cancel();
             isPanicing = false;
         }
         shoutController.tearDownSMSReceiver();

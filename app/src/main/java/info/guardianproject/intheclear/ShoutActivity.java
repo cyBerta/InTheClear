@@ -126,8 +126,8 @@ public class ShoutActivity extends Activity implements OnClickListener, OnDismis
         countdown.show();
 
         t = 0;
-        cd = new CountDownTimer(ITCConstants.Duriation.COUNTDOWN,
-                ITCConstants.Duriation.COUNTDOWNINTERVAL) {
+        cd = new CountDownTimer(ITCConstants.Duration.COUNTDOWN,
+                ITCConstants.Duration.COUNTDOWNINTERVAL) {
             @Override
             public void onFinish() {
                 recipients = configuredFriendsText.getText().toString();

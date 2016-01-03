@@ -1,10 +1,7 @@
 
 package info.guardianproject.intheclear;
 
-import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.ProgressDialog;
+import android.app.*;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -36,15 +33,15 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
     private static final String TAG = PanicActivity.class.getName();
     SharedPreferences sp;
     boolean oneTouchPanic;
-    boolean returnFromNotification;
 
     ListView listView;
     TextView shoutReadout, panicProgress, countdownReadout;
     Button controlPanic, cancelCountdown, panicControl;
+ //   ScheduledTaskReceiver scheduledTaskReceiver;
 
-    Intent panic, toKill;
     int panicState = ITCConstants.PanicState.AT_REST;
-
+    public static final String RETURNFROMNOTIFICATION = "ReturnFromNotifiaction";
+    public static final String CANCELNOTIFICATION = "CancelNotification";
     Dialog countdown;
     CountDownTimer cd;
 
@@ -58,7 +55,16 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
             switch (resultCode) {
 
                 case PanicService.UPDATE_PROGRESS:
-                    updateProgressWindow(resultData.getString(ITCConstants.UPDATE_UI));
+                    if (resultData.getString(ITCConstants.UPDATE_UI) != null){
+                        updateProgressWindow(resultData.getString(ITCConstants.UPDATE_UI));
+                    }
+                    if (resultData.getInt(ITCConstants.UPDATE_PANICSTATE) != 0){
+                        panicState = resultData.getInt(ITCConstants.UPDATE_PANICSTATE);
+                        if (panicState == ITCConstants.PanicState.IN_CONTINUED_PANIC) {
+                            Log.d(TAG, "inContinuedPanic now...");
+                            executeNewCountdown(ITCConstants.Duration.CONTINUED_PANIC);
+                        }
+                    }
                     break;
             }
         }
@@ -68,11 +74,13 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.d(TAG, "killReciever on Receiver!");
             killActivity();
         }
 
     };
     IntentFilter killFilter = new IntentFilter();
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -109,6 +117,8 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
         );
         panicStatusDialog.setMessage(currentPanicStatus);
         panicStatusDialog.setTitle(getResources().getString(R.string.KEY_PANIC_BTN_PANIC));
+        panicStatusDialog.setCanceledOnTouchOutside(false);
+        panicStatusDialog.setCancelable(false);
 
      /*   if(savedInstanceState != null && savedInstanceState.get("startFromWidget") != null &&  savedInstanceState.getInt("startFromWidget", 0) != 0){
             doPanic();
@@ -146,7 +156,18 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
     public void onStart() {
         super.onStart();
         alignPreferences();
+        Log.d(TAG, "onStart called");
+        //TODO: check if the following part ist still necessary --> s. onNewIntent
+//----------------------------
+        Intent i = getIntent();
+        boolean returnFromNotification = false;
+        if (i.getIntExtra(RETURNFROMNOTIFICATION, 0) == ITCConstants.Panic.RETURN) {
+            returnFromNotification = true;
+            i.removeExtra(RETURNFROMNOTIFICATION);
+        }
+
         if (!oneTouchPanic) {
+            //TODO: reduce switch if possible
             if (!returnFromNotification){
                 panicControl.setText(this.getResources().getString(R.string.KEY_PANIC_BTN_PANIC));
                 panicControl.setOnClickListener(this);
@@ -159,7 +180,10 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
 
 
         } else {
-            if (oneTouchPanic && !returnFromNotification){
+            Log.d(TAG, "Return From Notification: " + returnFromNotification);
+            if (!returnFromNotification ){
+                Toast.makeText(this, "Panic Job starting/continuing!", Toast.LENGTH_SHORT).show();
+
                 panicControl.setText(getString(R.string.KEY_PANIC_MENU_CANCEL));
                 panicControl.setOnClickListener(this);
                 doPanic();
@@ -171,21 +195,43 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
                 panicControl.setOnClickListener(this);
             }
         }
+
     }
 
+    /*gets called from the Notification*/
     @Override
     public void onNewIntent(Intent i) {
         super.onNewIntent(i);
-        setIntent(i);
+        Log.d(TAG, "onNewIntent called");
 
-        if (i.hasExtra("ReturnFrom") && i.getIntExtra("ReturnFrom", 0) == ITCConstants.Panic.RETURN) {
+        boolean returnFromNotification = false;
+
+        if (i.hasExtra(RETURNFROMNOTIFICATION) && i.getIntExtra(RETURNFROMNOTIFICATION, 0) == ITCConstants.Panic.RETURN) {
             // the app is being launched from the notification tray.
+            Log.d(TAG, "Has Extra: ReturnFrom -> Notification");
             returnFromNotification = true;
+            i.removeExtra(RETURNFROMNOTIFICATION);
 
+        } else {
+            Log.d(TAG, "HAS NOT EXTRA RETURN FROM!");
+        }
+
+        if (!returnFromNotification){
+            panicControl.setText(this.getResources().getString(R.string.KEY_PANIC_BTN_PANIC));
+            panicControl.setOnClickListener(this);
+        } else {
+            Toast.makeText(this, "Panic Job canceled!", Toast.LENGTH_SHORT).show();
+            cancelPanic();
+            panicControl.setText(this.getResources().getString(R.string.KEY_PANIC_BTN_PANIC));
+            panicControl.setOnClickListener(this);
         }
 
         if (i.hasExtra("PanicCount"))
             Log.d(ITCConstants.Log.ITC, "Panic Count at: " + i.getIntExtra("PanicCount", 0));
+
+
+        setIntent(i);
+
     }
 
     @Override
@@ -218,17 +264,29 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
 
     public void cancelPanic() {
         if (panicState == ITCConstants.PanicState.IN_COUNTDOWN) {
-            // if panic hasn't started, then just kill the countdown
-            cd.cancel();
-            panicState = ITCConstants.PanicState.AT_REST;
+            panicStatusDialog.cancel();
         }
-        Log.d(TAG, "panicState: :" + panicState);
+        //allways cancel Countdown on cancelPanic (-> we now use more PanicStates e.g. IN_CONTINUED_PANIC, where the cd might be ongoing)
+        cd.cancel();
 
-        toKill = new Intent(this, EndActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        Intent i = new Intent(this, PanicService.class);
+        i.putExtra(CANCELNOTIFICATION, " ");
+        i.setAction(PanicService.ACTION_CANCEL);
+        startService(i);
+        // Log.d(TAG, "panicState: :" + panicState);
+
+        //killActivity();
         finish();
-        startActivity(toKill);
+    }
 
-//TODO: finish after startActivity?!
+    @Override
+    public void onBackPressed() {
+        Log.d(TAG, "onBackPressed: PanicState: " + panicState);
+        if (panicState != ITCConstants.PanicState.AT_REST) {
+            Log.w(TAG, "not allowed to press back button atm!");
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
@@ -237,6 +295,7 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
             doPanic();
         } else if (v == panicControl && panicState != ITCConstants.PanicState.AT_REST) {
             cancelPanic();
+
         }
 
     }
@@ -244,6 +303,12 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
     @Override
     public void onDismiss(DialogInterface d) {
 
+    }
+
+    @Override
+    protected void onDestroy() {
+        panicStatusDialog.dismiss();
+        super.onDestroy();
     }
 
     public void updateProgressWindow(String message) {
@@ -254,7 +319,6 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
         Intent toKill = new Intent(PanicActivity.this, EndActivity.class)
                 .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(toKill);
-        finish();
     }
 
     public void launchPreferences() {
@@ -263,22 +327,28 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
     }
 
     private void doPanic() {
+
+        executeNewCountdown(ITCConstants.Duration.COUNTDOWN);
+
+    }
+
+    private void executeNewCountdown(final long countdownduration){
         panicState = ITCConstants.PanicState.IN_COUNTDOWN;
         panicControl.setText(getString(R.string.KEY_PANIC_MENU_CANCEL));
-        cd = new CountDownTimer(ITCConstants.Duriation.COUNTDOWN,
-                ITCConstants.Duriation.COUNTDOWNINTERVAL) {
-            int t = 5;
+        cd = new CountDownTimer(countdownduration,
+                ITCConstants.Duration.COUNTDOWNINTERVAL) {
+            int t = (int)(countdownduration/1000) - 1 ;
 
             @Override
             public void onFinish() {
                 // start the panic
-                Intent intent = new Intent(getApplicationContext(), PanicService.class);
-                intent.putExtra(RESULT_RECEIVER, resultReceiver);
-                startService(intent);
-
-                // kill the activity
-                killActivity();
+                startPanicService();
+                // scheduleAlarm();
+                // kill the activity doch lieber drin lassen?
+                //  killActivity();
+                //  FIXME: DONT FIXME ;) this causes an timing error:  killActivity();
             }
+
 
             @Override
             public void onTick(long millisUntilFinished) {
@@ -286,13 +356,18 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
                         getString(R.string.KEY_PANIC_COUNTDOWNMSG) +
                                 " " + t + " " +
                                 getString(R.string.KEY_SECONDS)
-                        );
+                );
                 t--;
             }
 
         };
-
         panicStatusDialog.show();
         cd.start();
+    }
+
+    private void startPanicService(){
+        Intent intent = new Intent(getApplicationContext(), PanicService.class);
+        intent.putExtra(RESULT_RECEIVER, resultReceiver);
+        startService(intent);
     }
 }

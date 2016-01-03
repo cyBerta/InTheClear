@@ -166,11 +166,11 @@ public class ITCConstants {
         }
     }
 
-    public static class Duriation {
+    public static class Duration {
         public static final long SPLASH = 3000L;
         public static final long COUNTDOWN = 6000L;
         public static final long COUNTDOWNINTERVAL = 1000L;
-        public static final long CONTINUED_PANIC = 60000L;
+        public static final long CONTINUED_PANIC = 45000L; //TODO: worked for 6000L
     }
 
     public static class Preference {
@@ -203,13 +203,16 @@ public class ITCConstants {
     }
 
     public static final String UPDATE_UI = "updateUi";
+    public static final String UPDATE_PANICSTATE = "updatePanicState";
 
     public static class PanicState {
         public static final int IN_COUNTDOWN = 1;
         public static final int IN_FIRST_SHOUT = 2;
         public static final int IN_WIPE = 3;
         public static final int IN_CONTINUED_PANIC = 4;
-        public static final int AT_REST = 0;
+        public static final int IN_SHOUT = 5;
+        public static final int AT_REST = 6;
+        public static final int FAILED = 7;
     }
 
     public static final int SERVICE_START = 1;

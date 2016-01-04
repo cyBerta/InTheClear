@@ -19,19 +19,14 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.text.util.Linkify;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.*;
 import android.widget.LinearLayout.LayoutParams;
-import android.widget.ScrollView;
-import android.widget.TextView;
 
 import info.guardianproject.panic.PanicReceiver;
 
@@ -39,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class WizardActivity extends Activity implements OnClickListener, SMSTesterConstants {
+    private static final String TAG = WizardActivity.class.getName();
     int wNum, nextWizard, lastWizard = 0;
 
     ScrollView sv;
@@ -140,12 +136,12 @@ public class WizardActivity extends Activity implements OnClickListener, SMSTest
             // v.getClass().toString());
             if (v instanceof EditText && ((String) v.getContentDescription()).compareTo("") != 0) {
                 ((EditText) v).setHint(prefs.getString((String) v.getContentDescription(), ""));
-            } else if (v instanceof Button
-                    && ((String) v.getContentDescription()).compareTo("") != 0) {
-                // actually, it's a checkbox, so we have to cast it.
-                ((CheckBox) v)
-                        .setSelected(prefs.getBoolean((String) v.getContentDescription(), false));
-            } else if (v instanceof LinearLayout) {
+            }
+            else if (v instanceof  CheckBox && ((String) v.getContentDescription()).compareTo("") != 0){
+                ((CheckBox) (v)).setChecked(prefs.getBoolean((String) v.getContentDescription(),false));
+                Log.d(TAG, "populate: setChhecked: " + ((CheckBox) v).isChecked() + "   prefs: " + prefs.getBoolean(ITCConstants.Preference.DEFAULT_ONE_TOUCH_PANIC, false));
+            }
+            else if (v instanceof LinearLayout) {
                 populateDefaults(v);
             }
         }
@@ -164,10 +160,12 @@ public class WizardActivity extends Activity implements OnClickListener, SMSTest
                     && ((EditText) v).getText().length() > 0) {
                 editor.putString((String) v.getContentDescription(),
                         ((EditText) v).getText().toString());
-            } else if (v instanceof Button
-                    && ((String) v.getContentDescription()).compareTo("") != 0) {
-                editor.putBoolean((String) v.getContentDescription(), ((CheckBox) v).isSelected());
-            } else if (v instanceof LinearLayout) {
+            } else if (v instanceof  CheckBox && (v.getContentDescription()).equals(ITCConstants.Preference.DEFAULT_ONE_TOUCH_PANIC)){
+                editor.putBoolean((String) v.getContentDescription(), ((CheckBox) v).isChecked());
+                //((CheckBox) (v)).setChecked(prefs.getBoolean((String) v.getContentDescription(), false));
+                Log.d(TAG, "populate: setChecked: " + ((CheckBox) v).isChecked() + "   prefs: " + prefs.getBoolean((String) v.getContentDescription(), false));
+
+        } else if (v instanceof LinearLayout) {
                 savePreferenceData(v);
             }
         }
@@ -471,7 +469,13 @@ public class WizardActivity extends Activity implements OnClickListener, SMSTest
                     oneTouchHolder.setPadding(0, 10, 0, 0);
                     oneTouchHolder.setGravity(Gravity.CENTER_VERTICAL);
 
-                    CheckBox oneTouch = new CheckBox(c);
+                    final CheckBox oneTouch = new CheckBox(c);
+                    oneTouch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                        @Override
+                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            Log.d(TAG, "set checked = " + oneTouch.isChecked());
+                        }
+                    });
                     oneTouch.setChecked(false);
                     oneTouch.setContentDescription(ITCConstants.Preference.DEFAULT_ONE_TOUCH_PANIC);
                     oneTouchHolder.addView(oneTouch);

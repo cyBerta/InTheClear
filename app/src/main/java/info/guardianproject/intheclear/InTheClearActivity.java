@@ -15,6 +15,7 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -25,13 +26,14 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import info.guardianproject.views.PanicButton;
 
 import java.util.Locale;
 
 public class InTheClearActivity extends Activity implements OnClickListener {
 
     private static final String TAG = InTheClearActivity.class.getName();
-    ImageView logoPanic;
+    PanicButton logoPanic;
     ImageView logoITC;
     GridView launchGrid;
 
@@ -60,7 +62,7 @@ public class InTheClearActivity extends Activity implements OnClickListener {
             alert.show();
         }
 
-        logoPanic = (ImageView) findViewById(R.id.logoPanic);
+        logoPanic = (PanicButton) findViewById(R.id.logoPanic);
         logoPanic.setOnClickListener(this);
 
         logoITC = (ImageView) findViewById(R.id.logoITC);
@@ -125,8 +127,6 @@ public class InTheClearActivity extends Activity implements OnClickListener {
         firstUpdate.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, appWidgetIds);
         context.sendBroadcast(firstUpdate);
 
-        /*Intent i = new Intent(this, PanicWidgetConfigureActivity.class);
-        i.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, )*/
         startActivity(firstUpdate);
     }
 
@@ -146,11 +146,8 @@ public class InTheClearActivity extends Activity implements OnClickListener {
         if (v == logoPanic) {
             launchPanic();
         }
-       /* else if (v == logoITC) {
-            Log.d(TAG, "Hello World");
-            launchWidgetConfigureActivity();
-        }*/
     }
+
 
     public class ImageAdapter extends BaseAdapter
     {

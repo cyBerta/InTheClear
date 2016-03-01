@@ -8,6 +8,7 @@ default.properties
 local.properties
 proguard.cfg
 proguard-project.txt
+*.iml
 
 # reproducible build files
 BUILD.MF

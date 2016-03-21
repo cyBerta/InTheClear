@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Message;
 import android.telephony.SmsManager;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,21 +44,29 @@ public class SMSSender implements SMSTesterConstants {
                 sms.sendTextMessage(recipient, null, msg, _sentPI, _deliveredPI);
             } catch (IllegalArgumentException e) {
                 smsThread.exitWithResult(false, SMS_INITIATED, SMS_INVALID_NUMBER);
+                c.unregisterReceiver(smsconfirm);
             } catch (NullPointerException e) {
                 smsThread.exitWithResult(false, SMS_INITIATED, SMS_INVALID_NUMBER);
+                c.unregisterReceiver(smsconfirm);
             }
         }
     }
 
     public class SMSThread extends Thread {
 
+        private final String TAG = SMSThread.class.getName();
+
         @Override
         public void run() {
-            c.registerReceiver(smsconfirm, new IntentFilter(SENT));
-            c.registerReceiver(smsconfirm, new IntentFilter(DELIVERED));
+            IntentFilter intentFilter = new IntentFilter();
+            intentFilter.addAction(SENT);
+            intentFilter.addAction(DELIVERED);
+            c.registerReceiver(smsconfirm, intentFilter);
+
         }
 
         public void exitWithResult(boolean result, int process, int status) {
+            Log.d(TAG, "exitWithResult");
             Message smsStatus = new Message();
             Map<String, Integer> msg = new HashMap<String, Integer>();
             int r = 1;

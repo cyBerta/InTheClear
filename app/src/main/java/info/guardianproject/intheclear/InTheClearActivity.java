@@ -104,8 +104,9 @@ public class InTheClearActivity extends Activity implements OnClickListener {
         startActivity(i);
     }
 
+
     private void launchPanic() {
-        Intent i = new Intent(this, PanicActivity.class);
+        Intent i = new Intent(this, PanicActivityNew.class);
         startActivity(i);
     }
 

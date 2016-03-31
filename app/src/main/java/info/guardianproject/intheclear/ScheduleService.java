@@ -5,26 +5,27 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
-
-import java.util.Calendar;
+import info.guardianproject.utils.Logger;
 
 /**
  * TODO: check if this service could be shut down after sending the alarm manager the messsage to repeat the notifications
  * ANSWER: NO, as the schedule services alarm task holds the pendingIntent which is used as a signature for cancelling alarmManager
  * */
-public class ScheduleService extends Service {
+public class ScheduleService extends Service implements SMSSender.SMSConfirmInterface{
 
 
 
 	private static final String TAG = ScheduleService.class.getName();
 	public final static String SERVICE_STATE = ScheduleService.class.getName().concat(".STATE");
-	public final static int SCHEDULESERVICECALLBACK_START = 0;
-	public final static int SCHEDULESERVICECALLBACK_STOP = 1;
 	public final static int SCHEDULESERVICECALLBACK_UNKNOWN = -1;
 	public final static int SCHEDULESERVICECALLBACK_ONBIND = 2;
+	public final static int SCHEDULESERVICECALLBACK_PANIC_STOPPED = 3;
 
 
 	private AlarmTask alarmTask;
+
+
+
 	/**
 	 * Class for clients to access
 	 */
@@ -36,8 +37,14 @@ public class ScheduleService extends Service {
 
 
 	@Override
+	public void onCreate() {
+		super.onCreate();
+		SMSSender.SMSConfirm.getInstance().registerReceiverIn(this);
+	}
+
+	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		Log.i("ScheduleService", "Received startAlarmTask id " + startId + ": " + intent);
+	Log.i("ScheduleService", "Received startAlarmTask id " + startId + ": " + intent.getAction());
 
 		if (intent.getAction() != null && intent.getAction().equals("StopService")) {
 				cancelAlarmTask();
@@ -97,11 +104,30 @@ public class ScheduleService extends Service {
 		} else {
 			Log.i(TAG, "alarm Task was null when cancel was called");
 		}
+		broadcastServiceState(SCHEDULESERVICECALLBACK_PANIC_STOPPED);
 	}
 
 	@Override
 	public void onDestroy(){
 		Log.i(TAG, "ScheduleService - onDestroy");
+		SMSSender.SMSConfirm.getInstance().unregisterReceiverFrom(this);
 		super.onDestroy();
 	}
+
+	@Override
+	public void onSMSSent(Intent intent) {
+
+		info.guardianproject.utils.Logger.logD(TAG, "onSMSSent: " + Logger.intentToString(intent));
+	}
+
+	private void broadcastServiceState(int state){
+		Log.d(TAG, "ScheduleService broadcastServiceState + " + state);
+		Intent broadcastIntent = new Intent();
+		broadcastIntent.setAction(ScheduleService.class.getName());
+		broadcastIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+		broadcastIntent.putExtra(SERVICE_STATE, state);
+		Log.d(TAG, "Send Broadcast, ServiceState: " + state + " - Service: " + ScheduleService.class.getName());
+		sendBroadcast(broadcastIntent);
+	}
+
 }

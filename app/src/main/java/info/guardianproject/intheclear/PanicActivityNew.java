@@ -2,14 +2,16 @@ package info.guardianproject.intheclear;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.IntentCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -17,6 +19,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import info.guardianproject.utils.EndActivity;
 
 import java.util.ArrayList;
 
@@ -24,7 +27,7 @@ import java.util.ArrayList;
  * Created by richy on 18.03.16.
  */
 public class PanicActivityNew extends Activity implements View.OnClickListener, ScheduleServiceClient.IScheduleClientCallback  {
-    private static final String TAG = PanicActivity.class.getName();
+    private static final String TAG = PanicActivityNew.class.getName();
     SharedPreferences sp;
     boolean oneTouchPanic;
     ListView listView;
@@ -48,6 +51,8 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
 
         // Create a new service client and bind our activity to this service
         scheduleClient = new ScheduleServiceClient(this);
+        scheduleClient.startService();
+        scheduleClient.doBindService();
 
         sp = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 
@@ -84,17 +89,14 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
         panicStatusDialog.setCanceledOnTouchOutside(false);
         panicStatusDialog.setCancelable(false);
 
+
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         alignPreferences();
-        if (scheduleClient != null){
-            scheduleClient.startService();
-            scheduleClient.doBindService();
-        }
-
 
         if (!oneTouchPanic) {
             //TODO: reduce switch if possible
@@ -130,24 +132,28 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
         listView.setAdapter(new WipeItemAdapter(this, wipeTasks));
         listView.setChoiceMode(ListView.CHOICE_MODE_NONE);
         listView.setClickable(false);
-        stealthMode = sp.getBoolean("stealthMode", false);
+        stealthMode = sp.getBoolean("stealthMode", true);
     }
 
 
 
     @Override
     protected void onStop() {
-        // When our activity is stopped ensure we also stop the connection to the service
-        // this stops us leaking our activity into the system *bad*
-        if(scheduleClient != null)
-            scheduleClient.doUnbindService();
         super.onStop();
     }
 
 
+    @Override
+    protected void onDestroy() {
+        // When our activity is stopped ensure we also stop the connection to the service
+        // this stops us leaking our activity into the system *bad*
+        if(scheduleClient != null)
+            scheduleClient.doUnbindService();
+        super.onDestroy();
+    }
 
     /**
-     * Callback method of the SceduleServiceClient
+     * Callback method of the ScheduleServiceClient
      **/
 
     @Override
@@ -172,25 +178,23 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
                         doPanic(true);
                     }
                     break;
-                case ScheduleService.SCHEDULESERVICECALLBACK_START:
-                    doSMSPanic();
-                    Log.d(TAG, "scheduleService started");
-                    break;
-                case ScheduleService.SCHEDULESERVICECALLBACK_STOP:
-                    Log.d(TAG, "SCHEDULESERVICE STOPPED!");
+                case ScheduleService.SCHEDULESERVICECALLBACK_PANIC_STOPPED:
+                    Log.d(TAG, "ScheduleService requests to stop panic");
+                    stopCountDownTimer();
+                    panicStatusDialog.cancel();
                     break;
             }
         } else if (serviceState.equals(ShoutService.SERVICE_STATE)){
             switch (callback){
-                default:
+               default:
                 case ShoutService.SHOUTSERVICECALLBACK_START:
                     Log.d(TAG, "sendingSMS");
                     showPanicStatus("sending SMS...");
-                    doSMSPanic();
 
                     break;
                 case ShoutService.SHOUTSERVICECALLBACK_STOP:
                     Log.d(TAG, "start countdown.");
+                    repeatSMSPanicCountdown();
                     break;
 
             }
@@ -208,6 +212,7 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
         }
     }
 
+    /*private methods*/
 
     private void stopCountDownTimer(){
         Log.d(TAG, "stopCountdownTimer!!");
@@ -236,7 +241,7 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
                     Log.d(TAG, "firstShout");
                     scheduleClient.startAlarm();
                     if (stealthMode){
-                        finish();
+                        clearBackstackAndFinish();
                     } else {
                         showPanicStatus("Starting... ");
                     }
@@ -257,7 +262,7 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
         panicStatusDialog.show();
     }
 
-    public void doSMSPanic(){
+    public void repeatSMSPanicCountdown(){
         doPanic(false);
     }
     public void doPanic(boolean firstShout){
@@ -265,13 +270,10 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
         if (firstShout){
             startCountdownTimer(10000, firstShout);
         } else {
-            startCountdownTimer(56000, false);
+            startCountdownTimer(58000, false);
         }
     }
 
-    public void cancelPanic(){
-
-    }
 
     private void alignPreferences() {
         oneTouchPanic = false;
@@ -297,6 +299,14 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
     public void launchPreferences() {
         Intent toPrefs = new Intent(this, SettingsActivity.class);
         startActivity(toPrefs);
+    }
+
+    public void clearBackstackAndFinish(){
+        Intent intent = new Intent(getApplicationContext(), EndActivity.class);
+        ComponentName cn = intent.getComponent();
+        Intent mainIntent = IntentCompat.makeRestartActivityTask(cn);
+        ActivityCompat.finishAffinity(this);
+        startActivity(mainIntent);
     }
 
 }

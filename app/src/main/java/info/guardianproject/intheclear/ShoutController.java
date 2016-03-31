@@ -19,22 +19,13 @@ public class ShoutController {
     PhoneInfo pi;
     SMSSender sms;
     MovementTracker mt;
-    Handler h;
     Context c;
 
     public ShoutController(Context c) {
-        h = new Handler() {
-            @Override
-            public void handleMessage(Message message) {
-                // TODO: handle confirmation of sent text
-                // perhaps broadcast this to calling activity?
-                Log.d(TAG, "handleMessage called");
-            }
-        };
-
         res = c.getResources();
         pi = new PhoneInfo(c);
-        sms = new SMSSender(c, h);
+        //TODO: remove Handler parameter
+        sms = new SMSSender(c, new Handler());
         mt = new MovementTracker(c);
         this.c = c;
     }

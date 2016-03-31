@@ -41,7 +41,6 @@ public class AlarmTask implements Runnable{
 		this.context = context;
 		this.am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		mNM = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
 	}
 
 	public void setRepeatingTime(long repeatingTime){
@@ -55,6 +54,7 @@ public class AlarmTask implements Runnable{
 		mNM.cancel(ShoutService.getNotificationId());
 		Log.i(TAG, "AlarmTask cancelled");
 
+
 //		Intent byeIntent = new Intent(context, SecondActivity.class);
 //		byeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 //		byeIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
@@ -63,8 +63,8 @@ public class AlarmTask implements Runnable{
 	
 	@Override
 	public void run() {
-		// Request to startAlarmTask are service when the alarm date is upon us
-		// We don't startAlarmTask an activity as we just want to pop up a notification into the system bar not a full activity
+		// Request to start a service when the alarm date is upon us
+		// We don't start an activity as we just want to pop up a notification into the system bar not a full activity
 		if (pendingIntent != null){
 			am.cancel(pendingIntent);
 		}

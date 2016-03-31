@@ -2,9 +2,7 @@ package info.guardianproject.intheclear;
 
 import android.content.*;
 import android.os.IBinder;
-import android.util.Log;
-
-import java.util.Calendar;
+import info.guardianproject.utils.Logger;
 
 /**
  * This class connects any activity with the schedule service.
@@ -14,7 +12,7 @@ import java.util.Calendar;
  */
 public class ScheduleServiceClient {
 
-	private static final String TAG = ScheduleService.class.getName();
+	private static final String TAG = ScheduleServiceClient.class.getName();
 
 	public interface IScheduleClientCallback{
 		public void onCallbackReceived(String service, int callbackState);
@@ -38,17 +36,18 @@ public class ScheduleServiceClient {
 	 * Call this to connect your activity to your service
 	 */
 	public void doBindService() {
-		Log.d(TAG, "doBindService");
+		Logger.logD(TAG, "doBindService");
 		// Establish a connection with our service
 		mContext.bindService(new Intent(mContext, ScheduleService.class), mConnection, Context.BIND_AUTO_CREATE);
 		if (mContext instanceof  IScheduleClientCallback){
-			Log.d(TAG, "mContext implements a callbackInterface!");
+			Logger.logD(TAG, "mContext implements a callbackInterface!");
 			serviceCallbackReceiver = new ServiceCallbackReceiver((IScheduleClientCallback)mContext);
 			IntentFilter intentFilter = new IntentFilter();
 			intentFilter.addAction(ShoutService.class.getName());
+			intentFilter.addAction(ScheduleService.class.getName());
 			mContext.registerReceiver(serviceCallbackReceiver, intentFilter);
 		} else {
-			Log.d(TAG, "mContext is not instanceof IScheduleClient");
+			Logger.logD(TAG, "mContext is not instanceof IScheduleClient");
 		}
 
 		mIsBound = true;
@@ -112,9 +111,9 @@ public class ScheduleServiceClient {
 	 * releasing your connection and resources
 	 */
 	public void doUnbindService() {
-		Log.d(TAG, "unbind service");
+		Logger.logD(TAG, "unbind service");
 		if (mIsBound) {
-			Log.d(TAG, "was bound...");
+			Logger.logD(TAG, "was bound...");
 			// Detach our existing connection.
 			mContext.unbindService(mConnection);
 			mContext.unregisterReceiver(serviceCallbackReceiver);
@@ -141,16 +140,17 @@ public class ScheduleServiceClient {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			if (intent.getAction() != null){
-				Log.d(TAG, "onReceive: " + intent.getAction());
+				Logger.logD(TAG, "onReceive: " + Logger.intentToString(intent));
 				if (intent.getAction().equals(NotifyService.class.getName())){
 					int serviceState = intent.getIntExtra(NotifyService.SERVICE_STATE, NotifyService.NOTIFYSERVICECALLBACK_UNKNOWN);
 					callbackImplementation.onCallbackReceived(NotifyService.SERVICE_STATE, serviceState);
 				} else if (intent.getAction().equals(ScheduleService.class.getName())){
-					int serviceState = intent.getIntExtra(ScheduleService.SERVICE_STATE, NotifyService.NOTIFYSERVICECALLBACK_UNKNOWN);
+					Logger.logD(TAG, "ScheduleService callback received : " + Logger.intentToString(intent));
+					int serviceState = intent.getIntExtra(ScheduleService.SERVICE_STATE, ScheduleService.SCHEDULESERVICECALLBACK_UNKNOWN);
 					callbackImplementation.onCallbackReceived(ScheduleService.SERVICE_STATE, serviceState);
 				} else if (intent.getAction().equals(ShoutService.class.getName())){
-					Log.d(TAG, "ShoutService callback received");
-					int serviceState = intent.getIntExtra(ShoutService.SERVICE_STATE, ScheduleService.SCHEDULESERVICECALLBACK_UNKNOWN);
+					Logger.logD(TAG, "ShoutService callback received : " + Logger.intentToString(intent));
+					int serviceState = intent.getIntExtra(ShoutService.SERVICE_STATE, ShoutService.SHOUTSERVICECALLBACK_UNKNOWN);
 					callbackImplementation.onCallbackReceived(ShoutService.SERVICE_STATE, serviceState);
 				}
 			}

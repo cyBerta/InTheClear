@@ -153,7 +153,7 @@ public class PanicService extends IntentService {
 
     private void stopRunnables() {
         isPanicing = false;
-        shoutController.tearDownSMSReceiver();
+//        shoutController.tearDownSMSReceiver();
         Log.d(TAG, "try to updatePanicProgress to ITCConstants.PanicState.AT_REST (" + ITCConstants.PanicState.AT_REST +")" );
         updatePanicProgress(ITCConstants.PanicState.AT_REST);
     }

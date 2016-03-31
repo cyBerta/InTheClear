@@ -21,9 +21,10 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 	public final static int SCHEDULESERVICECALLBACK_ONBIND = 2;
 	public final static int SCHEDULESERVICECALLBACK_PANIC_STOPPED = 3;
 
+	public final static String STOP_SCHEDULE_SERVICE = "StopService";
+
 
 	private AlarmTask alarmTask;
-
 
 
 	/**
@@ -46,7 +47,7 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 	public int onStartCommand(Intent intent, int flags, int startId) {
 	Log.i("ScheduleService", "Received startAlarmTask id " + startId + ": " + intent.getAction());
 
-		if (intent.getAction() != null && intent.getAction().equals("StopService")) {
+		if (intent.getAction() != null && intent.getAction().equals(STOP_SCHEDULE_SERVICE)) {
 				cancelAlarmTask();
 				Log.i(TAG, "Stop Service");
 		}
@@ -73,19 +74,6 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 
 	// This is the object that receives interactions from clients. See
 	private final IBinder mBinder = new ServiceBinder();
-/*
-	/**
-	 * Show an alarm for a certain date when the alarm is called it will pop up a notification
-	 */
-/*	public void setAlarm(Calendar c) {
-		// This starts a new thread to set the alarm
-		// You want to push off your tasks onto a new thread to free up the UI to carry on responding
-		if (alarmTask == null){
-			alarmTask = new AlarmTask(this, c);
-			Log.i(TAG, "alarmTask setAlarm - alarmTask != null now");
-		}
-	}
-*/
 
 	public void startAlarmTask(int milliseconds) {
 		Log.d(TAG, "startAlarmTask");
@@ -114,6 +102,7 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 		super.onDestroy();
 	}
 
+	//TODO: handle callbacks e.g. for failed sms
 	@Override
 	public void onSMSSent(Intent intent) {
 

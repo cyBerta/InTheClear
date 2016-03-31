@@ -121,7 +121,7 @@ public class ShoutService extends IntentService {
         long time = System.currentTimeMillis();
 
         Intent intent = new Intent(this, ScheduleService.class);
-        intent.setAction("StopService");
+        intent.setAction(ScheduleService.STOP_SCHEDULE_SERVICE);
 
         // The PendingIntent to launch our activity if the user selects this notification
         PendingIntent contentIntent = PendingIntent.getService(this, 0, intent, 0);

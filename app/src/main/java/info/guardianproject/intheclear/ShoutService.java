@@ -82,20 +82,14 @@ public class ShoutService extends IntentService {
         defaultPanicMsg = prefs.getString(ITCConstants.Preference.DEFAULT_PANIC_MSG, "");
     }
 
-    //TODO: remove int return value
-    private int shout() {
+    private void shout() {
         Log.d(TAG, "shout called");
-        if (shoutController == null){
-            Log.d(TAG, "but shoutController is null!");
-            return ITCConstants.Results.NOT_AVAILABLE;
-        }
-        int result = ITCConstants.Results.FAIL;
-        h.post(new Runnable() {
+        if (shoutController != null) {
+            h.post(new Runnable() {
 
-            @Override
-            public void run() {
-                Log.d(TAG, "runMethod in Shout");
-                    // TODO: this should actually be confirmed.
+                @Override
+                public void run() {
+                    Log.d(TAG, "runMethod in Shout");
                     shoutController.sendSMSShout(
                             configuredFriends,
                             defaultPanicMsg,
@@ -103,10 +97,10 @@ public class ShoutService extends IntentService {
                     );
                     Log.d(ITCConstants.Log.ITC, "this is a shout going out...");
 
-            }
+                }
 
-        });
-        return result;
+            });
+        }
     }
 
     private void showNotification() {
@@ -143,8 +137,6 @@ public class ShoutService extends IntentService {
         // Send the notification to the system.
         mNM.notify(NOTIFICATION, notification);
 
-    /*    // Stop the service when we are finished
-        stopSelf();*/
     }
 
     public static int getNotificationId(){

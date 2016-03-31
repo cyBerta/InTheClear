@@ -6,7 +6,6 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 import info.guardianproject.utils.Logger;
-
 /**
  * TODO: check if this service could be shut down after sending the alarm manager the messsage to repeat the notifications
  * ANSWER: NO, as the schedule services alarm task holds the pendingIntent which is used as a signature for cancelling alarmManager
@@ -49,14 +48,12 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 
 		if (intent.getAction() != null && intent.getAction().equals(STOP_SCHEDULE_SERVICE)) {
 				cancelAlarmTask();
+				stopSelf();
 				Log.i(TAG, "Stop Service");
 		}
 
-
-		return START_STICKY;
-
-
 		// We want this service to continue running until it is explicitly stopped, so return sticky.
+		return START_STICKY;
 	}
 
 	@Override
@@ -85,6 +82,9 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 	}
 
 
+	/**
+	 * 	cancels the alarmTask and broadcasts that to the receiver (atm. in ScheduleServiceClient)
+	 */
 	public void cancelAlarmTask(){
 		if (alarmTask != null){
 			alarmTask.cancel();
@@ -105,7 +105,6 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 	//TODO: handle callbacks e.g. for failed sms
 	@Override
 	public void onSMSSent(Intent intent) {
-
 		info.guardianproject.utils.Logger.logD(TAG, "onSMSSent: " + Logger.intentToString(intent));
 	}
 

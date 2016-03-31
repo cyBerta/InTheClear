@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import info.guardianproject.utils.Logger;
 
 /**
  * Created by richy on 18.03.16.
@@ -28,11 +29,8 @@ public class ShoutService extends IntentService {
     private SharedPreferences prefs;
     String defaultPanicMsg, configuredFriends;
 
-
     final Handler h = new Handler();
-    boolean isPanicing = false;
-    boolean cancelCommunicationToPanicActivity = false;
-    boolean firstShout = false;
+
 
 
     /**
@@ -58,7 +56,7 @@ public class ShoutService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        Log.i("LocalService", "Received startAlarmTask : " + intent);
+        Logger.logD(TAG, "ShoutService received : " + Logger.intentToString(intent));
 
         // If this service was started by out AlarmTask intent then we want to show our notification
         if(intent.getBooleanExtra(INTENT_NOTIFY, false)){
@@ -108,11 +106,6 @@ public class ShoutService extends IntentService {
             }
 
         });
-      /*  shoutController.sendSMSShout(
-                configuredFriends,
-                defaultPanicMsg,
-                ShoutController.buildShoutData(getResources())
-        );*/
         return result;
     }
 
@@ -140,8 +133,6 @@ public class ShoutService extends IntentService {
                 setContentTitle(title).
                 setAutoCancel(true). //muss auf true, sonst verschwindet Notification nicht!
                 setContentText(this.getResources().getString(R.string.KEY_PANIC_RETURN));
-                // setContentInfo(notificationInfo + " - contentInfo").
-                // setContentTitle(this.getResources().getString(R.string.KEY_PANIC_TITLE));
         notificationBuilder.setTicker(text);
 
 
@@ -161,18 +152,6 @@ public class ShoutService extends IntentService {
     }
 
 
-  /*  private Intent newBackToPanicIntent(boolean fromNotification){
-        Log.d(TAG, "BacktoPanicIntent");
-        Intent i = new Intent(this, PanicActivity.class);
-        if (fromNotification){
-            Log.d(TAG, "fromNotification, put extra ReturnFrom!");
-            i.putExtra(PanicActivityNew.RETURNFROMNOTIFICATION, ITCConstants.Panic.RETURN); //Konstante draus machen
-            // i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-        }
-
-        return i;
-    }*/
 
     @Override
     public void onDestroy() {

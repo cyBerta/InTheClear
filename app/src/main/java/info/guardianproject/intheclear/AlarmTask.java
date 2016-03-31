@@ -11,18 +11,18 @@ import java.util.Calendar;
 
 /**
  * Set an alarm for the date passed into the constructor
- * When the alarm is raised it will start the NotifyService
+ * When the alarm is raised it will start the ShoutService
  * 
  * This uses the android build in alarm manager *NOTE* if the phone is turned off this alarm will be cancelled
  * 
  * This will run on it's own thread.
  * 
  * @author paul.blundell
+ * @author cyBerta
+ *
  */
 public class AlarmTask implements Runnable{
 	private static final String TAG = AlarmTask.class.getName();
-	// The date selected for the alarm
-	//private final Calendar date;
 	// The android system alarm manager
 	private final AlarmManager am;
 	// Your context to retrieve the alarm manager from
@@ -43,22 +43,20 @@ public class AlarmTask implements Runnable{
 		mNM = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 	}
 
+	/**
+	 * sets the time period the alarm gets restarted
+	 */
 	public void setRepeatingTime(long repeatingTime){
 		this.repeating = repeatingTime;
 	}
 
-
+	/**
+	 * cancels the scheduled alarm and removes the notification from the system bar
+	 */
 	public void cancel(){
-
 		am.cancel(pendingIntent);
 		mNM.cancel(ShoutService.getNotificationId());
 		Log.i(TAG, "AlarmTask cancelled");
-
-
-//		Intent byeIntent = new Intent(context, SecondActivity.class);
-//		byeIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//		byeIntent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-//		context.startActivity(byeIntent);
 	}
 	
 	@Override
@@ -77,12 +75,13 @@ public class AlarmTask implements Runnable{
 		}
 	}
 
+	/**
+	 * creates a PendingIntent
+	 * @return  PendingIntent that starts the ShoutService and initiates a notification
+     */
 	private PendingIntent buildPendingIntent(){
 		Intent intent = new Intent(context, ShoutService.class);
 		intent.putExtra(ShoutService.INTENT_NOTIFY, true);
-		/*if (repeating != -1){
-			intent.putExtra(ShoutService.LOG_REPEATING, true);
-		}*/
 		return PendingIntent.getService(context, 0, intent, 0);
 	}
 }

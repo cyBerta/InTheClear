@@ -139,6 +139,7 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
 
     @Override
     protected void onStop() {
+        panicStatusDialog.dismiss();
         super.onStop();
     }
 
@@ -226,12 +227,11 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
 
             @Override
             public void onTick(long millisUntilFinished) {
-                panicStatusDialog.setMessage(
-                        getString(R.string.KEY_PANIC_COUNTDOWNMSG) +
-                                " " + ((int) millisUntilFinished/1000-1) + " " +
-                                getString(R.string.KEY_SECONDS)
-                );
-
+                    showPanicStatus(
+                            getString(R.string.KEY_PANIC_COUNTDOWNMSG) +
+                                    " " + ((int) millisUntilFinished/1000-1) + " " +
+                                    getString(R.string.KEY_SECONDS)
+                    );
             }
 
             @Override
@@ -254,12 +254,12 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
             }
         };
         countDownTimer.start();
-        panicStatusDialog.show();
     }
 
     private void showPanicStatus(String message){
         panicStatusDialog.setMessage(message);
         panicStatusDialog.show();
+
     }
 
     public void repeatSMSPanicCountdown(){

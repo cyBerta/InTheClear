@@ -123,7 +123,7 @@ public class ShoutService extends IntentService {
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this);
         notificationBuilder.
                 setContentIntent(contentIntent).
-                setSmallIcon(R.drawable.panic).
+                setSmallIcon(icon).
                 setContentTitle(title).
                 setAutoCancel(true). //muss auf true, sonst verschwindet Notification nicht!
                 setContentText(this.getResources().getString(R.string.KEY_PANIC_RETURN));

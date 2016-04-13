@@ -45,6 +45,7 @@ public class ScheduleServiceClient {
 			IntentFilter intentFilter = new IntentFilter();
 			intentFilter.addAction(ShoutService.class.getName());
 			intentFilter.addAction(ScheduleService.class.getName());
+//			intentFilter.addAction(WipeServiceNew.class.getName());
 			mContext.registerReceiver(serviceCallbackReceiver, intentFilter);
 		} else {
 			Logger.logD(TAG, "mContext is not instanceof IScheduleClient");
@@ -105,7 +106,25 @@ public class ScheduleServiceClient {
 	public void stopAlarm(){
 		mBoundService.cancelAlarmTask();
 	}
-	
+
+	public void startWiping() throws InterruptedException{
+		mBoundService.startWipeTask();
+	}
+
+	public void stopWiping(){
+		mBoundService.cancelWipeTask();
+	}
+
+	public void startPanic()throws InterruptedException{
+		startAlarm();
+		startWiping();
+	}
+
+	public void stopPanic(){
+		stopAlarm();
+		stopWiping();
+	}
+
 	/**
 	 * When you have finished with the service call this method to stop it 
 	 * releasing your connection and resources
@@ -123,7 +142,7 @@ public class ScheduleServiceClient {
 	}
 
 	/**
-	 * This is the Broadcast receiver handles services callbacks and passes
+	 * This Broadcast receiver handles services callbacks and passes
 	 * the result to the Activity that implements the callbackInterface
 	 */
 
@@ -152,7 +171,10 @@ public class ScheduleServiceClient {
 					Logger.logD(TAG, "ShoutService callback received : " + Logger.intentToString(intent));
 					int serviceState = intent.getIntExtra(ShoutService.SERVICE_STATE, ShoutService.SHOUTSERVICECALLBACK_UNKNOWN);
 					callbackImplementation.onCallbackReceived(ShoutService.SERVICE_STATE, serviceState);
-				}
+				} /* else if (intent.getAction().equals(WipeServiceNew.class.getName())){
+					int serviceState = intent.getIntExtra(WipeServiceNew.SERVICE_STATE, WipeServiceNew.WIPESERVICECALLBACK_UNKNOWN);
+					callbackImplementation.onCallbackReceived(WipeServiceNew.SERVICE_STATE, serviceState);
+				}*/
 			}
 
 		}

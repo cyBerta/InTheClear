@@ -79,7 +79,7 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (scheduleClient != null){
-                            scheduleClient.stopAlarm();
+                            scheduleClient.stopPanic();
                             stopCountDownTimer();
                         }
                     }
@@ -132,7 +132,7 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
         listView.setAdapter(new WipeItemAdapter(this, wipeTasks));
         listView.setChoiceMode(ListView.CHOICE_MODE_NONE);
         listView.setClickable(false);
-        stealthMode = sp.getBoolean("stealthMode", true);
+        stealthMode = sp.getBoolean("stealthMode", false);
     }
 
 
@@ -160,30 +160,42 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
     @Override
     public void onCallbackReceived(String serviceState, int callback) {
         Log.d(TAG, "onCallbackReceived ServiceState: " + serviceState + " -> " + callback );
-        if (serviceState.equals(NotifyService.SERVICE_STATE)){
+/*        if (serviceState.equals(NotifyService.SERVICE_STATE)){
             switch (callback){
                 default:
                 case NotifyService.NOTIFYSERVICECALLBACK_START:
-                    Log.d(TAG, "NOTICATIONSERVICE STARTh!");
+                    Log.d(TAG, "NOTICATIONSERVICE START!");
                     break;
                 case NotifyService.NOTIFYSERVICECALLBACK_STOP:
                     Log.d(TAG, "NOTICATIONSERVICE STOPPED!");
                     break;
             }
-        } else if (serviceState.equals(ScheduleService.SERVICE_STATE)){
+        } else */
+        if (serviceState.equals(ScheduleService.SERVICE_STATE)){
             switch (callback){
-                default:
                 case ScheduleService.SCHEDULESERVICECALLBACK_ONBIND:
                     if (oneTouchPanic){
                         Log.d(TAG, "SCHEDULESERVICECALLBACK_ONBIND");
                         doPanic(true);
                     }
                     break;
-                case ScheduleService.SCHEDULESERVICECALLBACK_PANIC_STOPPED:
+                case ScheduleService.SCHEDULESERVICECALLBACK_ALARMTASK_STOPPED:
                     Log.d(TAG, "ScheduleService requests to stop panic");
                     stopCountDownTimer();
                     panicStatusDialog.cancel();
                     break;
+                case ScheduleService.SCHEDULESERVICECALLBACK_ALARMTASK_STARTED:
+                    showPanicStatus("first sms will be sent within the next minute!");
+                    break;
+                case ScheduleService.SCHEDULESERVICECALLBACK_WIPETASK_STARTED:
+                    Log.d(TAG, "WipeTask started!");
+                    break;
+                case ScheduleService.SCHEDULESERVICECALLBACK_SERVICE_STOPPED:
+                    Log.d(TAG, "Scheduleservise stopped");
+                    break;
+                default:
+                    break;
+
             }
         } else if (serviceState.equals(ShoutService.SERVICE_STATE)){
             switch (callback){
@@ -199,7 +211,19 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
                     break;
 
             }
-        }
+        } /*else if (serviceState.equals(WipeServiceNew.SERVICE_STATE)){
+            switch (callback){
+                default:
+                case WipeServiceNew.WIPESERVICECALLBACK_START:
+                    Log.d(TAG, "WIPESERVICECALLBACK START");
+//                    TODO: IMPLEMENT
+                    break;
+                case WipeServiceNew.WIPESERVICECALLBACK_STOP:
+                    Log.d(TAG, "WIPESERVICECALLBACK STOP");
+                    //TODO: IMPLEMENT
+                    break;
+
+        }}*/
 
     }
 
@@ -239,12 +263,17 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
                 Log.d(TAG, "onFininsh called");
                 if (firstShout){
                     Log.d(TAG, "firstShout");
-                    scheduleClient.startAlarm();
+                    try{
+                        scheduleClient.startPanic();
+                    } catch (InterruptedException e){
+                        Log.d(TAG, "Wiptask was interrupted: " + e.getMessage());
+                    }
                     if (stealthMode){
                         clearBackstackAndFinish();
                     } else {
                         showPanicStatus("Starting... ");
                     }
+
                 } else {
                     Log.d(TAG, "not firstShout");
                     showPanicStatus("Repeating...");

@@ -36,6 +36,7 @@ public class PIMWiper extends Thread {
     private static ContentResolver cr;
     private static AccountManager am;
     private static Context c;
+    private static boolean isRunning = false;
 
     private boolean contacts, photos, callLog, sms, calendar, sdcard;
 
@@ -66,6 +67,7 @@ public class PIMWiper extends Thread {
     @Override
     public void run() {
         try {
+            isRunning = true;
             // FIRST, you must turn off sync or else you get the
             // "Deleted Contacts" error...
             preventSync();
@@ -107,7 +109,13 @@ public class PIMWiper extends Thread {
             }
         } catch (IOException e) {
             Log.d(ITCConstants.Log.ITC, "Wipe has failed: " + e);
+        } catch (PIMWiperStoppedException e){
+            Log.d(ITCConstants.Log.ITC, "PIMWiper Stopped!");
         }
+    }
+
+    public void stopPIMWiper(){
+        isRunning = false;
     }
 
     private static void getAvailableColumns(Cursor cursor) {
@@ -129,7 +137,7 @@ public class PIMWiper extends Thread {
 
     private static ArrayList<Integer> wipeAssets(Uri uriBase, String authority,
             String[] rewriteStrings, String[] rewriteFiles) throws FileNotFoundException,
-            IOException {
+            IOException, PIMWiperStoppedException {
         /*
          * primarily for the sake of the calendar wipe, return the list of asset
          * IDs, should you need to drill down further into the content resolver
@@ -149,6 +157,9 @@ public class PIMWiper extends Thread {
                         + uriBase.toString());
 
                 while (!cursor.isAfterLast()) {
+                    if (!isRunning) {
+                        throw new PIMWiperStoppedException();
+                    }
                     _id = cursor.getLong(cursor.getColumnIndex("_id"));
                     assetIds.add((int) _id);
 
@@ -459,4 +470,12 @@ public class PIMWiper extends Thread {
          * != 0) if(!folder.delete()) wipeFolder(folder);
          */
     }
+
+    public static class PIMWiperStoppedException extends RuntimeException{
+        public PIMWiperStoppedException(){
+            super();
+        }
+
+    }
+
 }

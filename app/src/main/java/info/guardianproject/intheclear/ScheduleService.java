@@ -2,8 +2,10 @@ package info.guardianproject.intheclear;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import info.guardianproject.utils.Logger;
 /**
@@ -18,12 +20,20 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 	public final static String SERVICE_STATE = ScheduleService.class.getName().concat(".STATE");
 	public final static int SCHEDULESERVICECALLBACK_UNKNOWN = -1;
 	public final static int SCHEDULESERVICECALLBACK_ONBIND = 2;
-	public final static int SCHEDULESERVICECALLBACK_PANIC_STOPPED = 3;
+	public final static int SCHEDULESERVICECALLBACK_ALARMTASK_STOPPED = 3;
+	public final static int SCHEDULESERVICECALLBACK_ALARMTASK_STARTED = 4;
+	public final static int SCHEDULESERVICECALLBACK_WIPETASK_STARTED = 5;
+	public final static int SCHEDULESERVICECALLBACK_WIPETASK_STOPPED = 6;
+	public final static int SCHEDULESERVICECALLBACK_SERVICE_STOPPED = 7;
 
 	public final static String STOP_SCHEDULE_SERVICE = "StopService";
+	public final static String STOP_SHOUT_TASK = "StopShoutTask";
+	public final static String STOP_WIPE_TASK = "StopWipeTask";
 
 
 	private AlarmTask alarmTask;
+	private PIMWiper wipeTask;
+	private SharedPreferences prefs;
 
 
 	/**
@@ -40,17 +50,27 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 	public void onCreate() {
 		super.onCreate();
 		SMSSender.SMSConfirm.getInstance().registerReceiverIn(this);
+		prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 	Log.i("ScheduleService", "Received startAlarmTask id " + startId + ": " + intent.getAction());
 
-		if (intent.getAction() != null && intent.getAction().equals(STOP_SCHEDULE_SERVICE)) {
+		if (intent.getAction() != null){
+			if (intent.getAction().equals(STOP_SCHEDULE_SERVICE)) {
 				cancelAlarmTask();
+				cancelWipeTask();
 				stopSelf();
 				Log.i(TAG, "Stop Service");
+			} else if (intent.getAction().equals(STOP_SHOUT_TASK)){
+				cancelAlarmTask();
+			} else if (intent.getAction().equals(STOP_WIPE_TASK)){
+				cancelWipeTask();
+			}
 		}
+
 
 		// We want this service to continue running until it is explicitly stopped, so return sticky.
 		return START_STICKY;
@@ -79,6 +99,7 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
  		}
 		alarmTask.setRepeatingTime(milliseconds);
 		alarmTask.run();
+		broadcastServiceState(SCHEDULESERVICECALLBACK_ALARMTASK_STARTED);
 	}
 
 
@@ -92,12 +113,34 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 		} else {
 			Log.i(TAG, "alarm Task was null when cancel was called");
 		}
-		broadcastServiceState(SCHEDULESERVICECALLBACK_PANIC_STOPPED);
+		broadcastServiceState(SCHEDULESERVICECALLBACK_ALARMTASK_STOPPED);
 	}
+
+	public void startWipeTask() throws InterruptedException {
+		//TODO: check what happens if restarted? Inconsistent states?
+		wipeTask = new PIMWiper(
+				getBaseContext(),
+				prefs.getBoolean(ITCConstants.Preference.DEFAULT_WIPE_CONTACTS, false),
+				prefs.getBoolean(ITCConstants.Preference.DEFAULT_WIPE_PHOTOS, false),
+				prefs.getBoolean(ITCConstants.Preference.DEFAULT_WIPE_CALLLOG, false),
+				prefs.getBoolean(ITCConstants.Preference.DEFAULT_WIPE_SMS, false),
+				prefs.getBoolean(ITCConstants.Preference.DEFAULT_WIPE_CALENDAR, false),
+				prefs.getBoolean(ITCConstants.Preference.DEFAULT_WIPE_FOLDERS, false));
+		wipeTask.start();
+		broadcastServiceState(SCHEDULESERVICECALLBACK_WIPETASK_STARTED);
+	}
+
+	public void cancelWipeTask(){
+		wipeTask.stopPIMWiper();
+		broadcastServiceState(SCHEDULESERVICECALLBACK_WIPETASK_STOPPED);
+
+	}
+
 
 	@Override
 	public void onDestroy(){
 		Log.i(TAG, "ScheduleService - onDestroy");
+		broadcastServiceState(SCHEDULESERVICECALLBACK_SERVICE_STOPPED);
 		SMSSender.SMSConfirm.getInstance().unregisterReceiverFrom(this);
 		super.onDestroy();
 	}

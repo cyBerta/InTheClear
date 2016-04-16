@@ -5,7 +5,7 @@
     android:versionName="1.1" >
 
     <uses-sdk
-        android:minSdkVersion="9"
+        android:minSdkVersion="11"
         android:targetSdkVersion="22" />
 
     <uses-feature
@@ -71,7 +71,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <activity
+       <!-- <activity
             android:name=".PanicActivity"
             android:configChanges="orientation|keyboardHidden"
             android:icon="@drawable/panic"
@@ -86,7 +86,24 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity> -->
+        <activity
+                android:name=".PanicActivityNew"
+                android:configChanges="orientation|keyboardHidden"
+                android:icon="@drawable/panic"
+                android:label="Panic!"
+                android:launchMode="singleInstance"
+                android:screenOrientation="portrait"
+                android:taskAffinity=".apps.Panic"
+                android:theme="@android:style/Theme.NoTitleBar"
+                android:windowSoftInputMode="stateHidden" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
+
         <activity
             android:name=".ShoutActivity"
             android:configChanges="orientation|keyboardHidden"
@@ -133,11 +150,17 @@
                 android:resource="@xml/panic_widget_info"/>
         </receiver>
 
-    <!--    <activity android:name=".PanicWidgetConfigureActivity" >
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
-            </intent-filter>
-        </activity>-->
+
+        <service android:name=".ScheduleService" />
+        <service android:name=".NotifyService" />
+        <service android:name=".ShoutService" />
+
+
+        <!--    <activity android:name=".PanicWidgetConfigureActivity" >
+                <intent-filter>
+                    <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+                </intent-filter>
+            </activity>-->
     </application>
 
 </manifest>

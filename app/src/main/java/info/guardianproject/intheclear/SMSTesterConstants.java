@@ -12,6 +12,7 @@ public interface SMSTesterConstants {
     public final static int SMS_SENT = Activity.RESULT_OK;
     public final static int SMS_DELIVERED = Activity.RESULT_OK;
 
+    public final static String INITIATED = "SMS_INITIATED";
     public final static String SENT = "SMS_SENT";
     public final static String DELIVERED = "SMS_DELIVERED";
 

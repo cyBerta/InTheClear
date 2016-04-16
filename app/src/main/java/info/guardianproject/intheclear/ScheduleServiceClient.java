@@ -45,7 +45,6 @@ public class ScheduleServiceClient {
 			IntentFilter intentFilter = new IntentFilter();
 			intentFilter.addAction(ShoutService.class.getName());
 			intentFilter.addAction(ScheduleService.class.getName());
-//			intentFilter.addAction(WipeServiceNew.class.getName());
 			mContext.registerReceiver(serviceCallbackReceiver, intentFilter);
 		} else {
 			Logger.logD(TAG, "mContext is not instanceof IScheduleClient");
@@ -83,24 +82,7 @@ public class ScheduleServiceClient {
 			mBoundService = null;
 		}
 	};
-/*
-	/**
-	 * Tell our service to set an alarm for the given date
-	 * @param c a date to set the notification for
-	 */
-/*	public void setAlarmForNotification(Calendar c){
-		mBoundService.setAlarm(c);
-	}
-*/
-/*
-	/**
-	 * sets the amount of time a new job will be started
-	 * @param seconds  seconds
-     */
-/*	public void setRepeatTime(int seconds){
-		mBoundService.setRepeatTime(seconds * 1000);
-	}
-*/
+
 	/*starts the sms job*/
 	public void startAlarm(){
 		mBoundService.startAlarmTask(60000);
@@ -164,10 +146,7 @@ public class ScheduleServiceClient {
 		public void onReceive(Context context, Intent intent) {
 			if (intent.getAction() != null){
 				Logger.logD(TAG, "onReceive: " + Logger.intentToString(intent));
-				if (intent.getAction().equals(NotifyService.class.getName())){
-					int serviceState = intent.getIntExtra(NotifyService.SERVICE_STATE, NotifyService.NOTIFYSERVICECALLBACK_UNKNOWN);
-					callbackImplementation.onCallbackReceived(NotifyService.SERVICE_STATE, serviceState);
-				} else if (intent.getAction().equals(ScheduleService.class.getName())){
+				if (intent.getAction().equals(ScheduleService.class.getName())){
 					Logger.logD(TAG, "ScheduleService callback received : " + Logger.intentToString(intent));
 					int serviceState = intent.getIntExtra(ScheduleService.SERVICE_STATE, ScheduleService.SCHEDULESERVICECALLBACK_UNKNOWN);
 					callbackImplementation.onCallbackReceived(ScheduleService.SERVICE_STATE, serviceState);
@@ -175,10 +154,7 @@ public class ScheduleServiceClient {
 					Logger.logD(TAG, "ShoutService callback received : " + Logger.intentToString(intent));
 					int serviceState = intent.getIntExtra(ShoutService.SERVICE_STATE, ShoutService.SHOUTSERVICECALLBACK_UNKNOWN);
 					callbackImplementation.onCallbackReceived(ShoutService.SERVICE_STATE, serviceState);
-				} /* else if (intent.getAction().equals(WipeServiceNew.class.getName())){
-					int serviceState = intent.getIntExtra(WipeServiceNew.SERVICE_STATE, WipeServiceNew.WIPESERVICECALLBACK_UNKNOWN);
-					callbackImplementation.onCallbackReceived(WipeServiceNew.SERVICE_STATE, serviceState);
-				}*/
+				}
 			}
 
 		}

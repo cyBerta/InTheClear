@@ -97,18 +97,8 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
     protected void onStart() {
         super.onStart();
         alignPreferences();
+        panicControl.setOnClickListener(this);
 
-        if (!oneTouchPanic) {
-            //TODO: reduce switch if possible
-            panicControl.setText(this.getResources().getString(R.string.KEY_PANIC_BTN_PANIC));
-            panicControl.setOnClickListener(this);
-
-        } else {
-                Toast.makeText(this, "Panic Job starting/continuing!", Toast.LENGTH_SHORT).show();
-
-            panicControl.setText(getString(R.string.KEY_PANIC_MENU_CANCEL));
-            panicControl.setOnClickListener(this);
-        }
     }
 
     @Override
@@ -132,7 +122,7 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
         listView.setAdapter(new WipeItemAdapter(this, wipeTasks));
         listView.setChoiceMode(ListView.CHOICE_MODE_NONE);
         listView.setClickable(false);
-        stealthMode = sp.getBoolean("stealthMode", false);
+        stealthMode = sp.getBoolean("stealthMode", true);
     }
 
 
@@ -232,7 +222,7 @@ public class PanicActivityNew extends Activity implements View.OnClickListener, 
      */
     @Override
     public void onClick(View v) {
-        if (v == panicControl && panicState == ITCConstants.PanicState.AT_REST) {
+        if (v == panicControl && scheduleClient.isServiceBound()) {
             doPanic(true);
         }
     }

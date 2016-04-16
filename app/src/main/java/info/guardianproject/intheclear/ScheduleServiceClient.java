@@ -54,6 +54,10 @@ public class ScheduleServiceClient {
 		mIsBound = true;
 	}
 
+	public boolean isServiceBound(){
+		return mIsBound;
+	}
+
 	public void startService() {
 		mContext.startService(new Intent(mContext, ScheduleService.class));
 	}

@@ -12,7 +12,7 @@ import android.util.Log;
 
 import java.util.Timer;
 import java.util.TimerTask;
-
+@Deprecated
 public class WipeService extends Service {
     boolean callbackAttached = false;
     String callbackClass;

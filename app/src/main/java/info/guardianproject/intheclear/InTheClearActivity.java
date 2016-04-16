@@ -15,7 +15,6 @@ import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -106,7 +105,7 @@ public class InTheClearActivity extends Activity implements OnClickListener {
 
 
     private void launchPanic() {
-        Intent i = new Intent(this, PanicActivityNew.class);
+        Intent i = new Intent(this, PanicActivity.class);
         startActivity(i);
     }
 

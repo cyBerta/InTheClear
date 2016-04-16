@@ -1,91 +1,57 @@
-
 package info.guardianproject.intheclear;
 
-import android.app.*;
-import android.content.BroadcastReceiver;
-import android.content.Context;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.os.Handler;
-import android.os.ResultReceiver;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.IntentCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import info.guardianproject.intheclear.ITCConstants.Preference;
 import info.guardianproject.utils.EndActivity;
 
 import java.util.ArrayList;
 
-public class PanicActivity extends Activity implements OnClickListener, OnDismissListener {
-
+/**
+ * Created by richy on 18.03.16.
+ */
+public class PanicActivity extends Activity implements View.OnClickListener, ScheduleServiceClient.IScheduleClientCallback  {
     private static final String TAG = PanicActivity.class.getName();
     SharedPreferences sp;
     boolean oneTouchPanic;
-
     ListView listView;
     TextView shoutReadout, panicProgress, countdownReadout;
     Button controlPanic, cancelCountdown, panicControl;
- //   ScheduledTaskReceiver scheduledTaskReceiver;
-
-    int panicState = ITCConstants.PanicState.AT_REST;
-    public static final String RETURNFROMNOTIFICATION = "ReturnFromNotifiaction";
-    public static final String CANCELNOTIFICATION = "CancelNotification";
-    Dialog countdown;
-    CountDownTimer cd;
-
+    CountDownTimer countDownTimer;
+    private ScheduleServiceClient scheduleClient;
     ProgressDialog panicStatusDialog;
     String currentPanicStatus;
+    private boolean stealthMode;
+    int panicState;
 
-    public static final String RESULT_RECEIVER = "resultReceiver";
-    private ResultReceiver resultReceiver = new ResultReceiver(new Handler()) {
-        @Override
-        protected void onReceiveResult(int resultCode, Bundle resultData) {
-            switch (resultCode) {
-
-                case PanicService.UPDATE_PROGRESS:
-                    if (resultData.getString(ITCConstants.UPDATE_UI) != null){
-                        updateProgressWindow(resultData.getString(ITCConstants.UPDATE_UI));
-                    }
-                    if (resultData.getInt(ITCConstants.UPDATE_PANICSTATE) != 0){
-                        panicState = resultData.getInt(ITCConstants.UPDATE_PANICSTATE);
-                        if (panicState == ITCConstants.PanicState.IN_CONTINUED_PANIC) {
-                            Log.d(TAG, "inContinuedPanic now...");
-                            executeNewCountdown(ITCConstants.Duration.CONTINUED_PANIC, false);
-                        }
-                    }
-                    break;
-            }
-        }
-    };
-
-    private BroadcastReceiver killReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.d(TAG, "killReciever on Receiver!");
-            killActivity();
-        }
-
-    };
-    IntentFilter killFilter = new IntentFilter();
-
+    /**
+     * Mehtods ot the Activity Life Cycle
+     */
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.panic);
+
+        // Create a new service client and bind our activity to this service
+        scheduleClient = new ScheduleServiceClient(this);
+        scheduleClient.startService();
+        scheduleClient.doBindService();
 
         sp = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 
@@ -111,135 +77,199 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
 
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        cancelPanic();
+                        if (scheduleClient != null){
+                            scheduleClient.stopPanic();
+                            stopCountDownTimer();
+                        }
                     }
                 }
         );
-        panicStatusDialog.setMessage(currentPanicStatus);
         panicStatusDialog.setTitle(getResources().getString(R.string.KEY_PANIC_BTN_PANIC));
         panicStatusDialog.setCanceledOnTouchOutside(false);
         panicStatusDialog.setCancelable(false);
 
-     /*   if(savedInstanceState != null && savedInstanceState.get("startFromWidget") != null &&  savedInstanceState.getInt("startFromWidget", 0) != 0){
-            doPanic();
-        }*/
+
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        alignPreferences();
+        panicControl.setOnClickListener(this);
 
     }
 
     @Override
     public void onResume() {
+        super.onResume();
 
         final ArrayList<WipeItem> wipeTasks = new ArrayList<WipeItem>(6);
         wipeTasks.add(0,
-                new WipeItem(R.string.KEY_WIPE_WIPECONTACTS, sp, Preference.DEFAULT_WIPE_CONTACTS));
+                new WipeItem(R.string.KEY_WIPE_WIPECONTACTS, sp, ITCConstants.Preference.DEFAULT_WIPE_CONTACTS));
         wipeTasks.add(1,
-                new WipeItem(R.string.KEY_WIPE_WIPEPHOTOS, sp, Preference.DEFAULT_WIPE_PHOTOS));
+                new WipeItem(R.string.KEY_WIPE_WIPEPHOTOS, sp, ITCConstants.Preference.DEFAULT_WIPE_PHOTOS));
         wipeTasks.add(2,
-                new WipeItem(R.string.KEY_WIPE_CALLLOG, sp, Preference.DEFAULT_WIPE_CALLLOG));
+                new WipeItem(R.string.KEY_WIPE_CALLLOG, sp, ITCConstants.Preference.DEFAULT_WIPE_CALLLOG));
         wipeTasks.add(3,
-                new WipeItem(R.string.KEY_WIPE_SMS, sp, Preference.DEFAULT_WIPE_SMS));
+                new WipeItem(R.string.KEY_WIPE_SMS, sp, ITCConstants.Preference.DEFAULT_WIPE_SMS));
         wipeTasks.add(4,
-                new WipeItem(R.string.KEY_WIPE_CALENDAR, sp, Preference.DEFAULT_WIPE_CALENDAR));
+                new WipeItem(R.string.KEY_WIPE_CALENDAR, sp, ITCConstants.Preference.DEFAULT_WIPE_CALENDAR));
         wipeTasks.add(5,
-                new WipeItem(R.string.KEY_WIPE_SDCARD, sp, Preference.DEFAULT_WIPE_FOLDERS));
+                new WipeItem(R.string.KEY_WIPE_SDCARD, sp, ITCConstants.Preference.DEFAULT_WIPE_FOLDERS));
 
         listView.setAdapter(new WipeItemAdapter(this, wipeTasks));
         listView.setChoiceMode(ListView.CHOICE_MODE_NONE);
         listView.setClickable(false);
-
-        killFilter.addAction(this.getClass().toString());
-        registerReceiver(killReceiver, killFilter);
-        super.onResume();
+        stealthMode = sp.getBoolean("stealthMode", true);
     }
+
+
 
     @Override
-    public void onStart() {
-        super.onStart();
-        alignPreferences();
-        Log.d(TAG, "onStart called");
-        //TODO: check if the following part ist still necessary --> s. onNewIntent
-//----------------------------
-        Intent i = getIntent();
-        boolean returnFromNotification = false;
-        if (i.getIntExtra(RETURNFROMNOTIFICATION, 0) == ITCConstants.Panic.RETURN) {
-            returnFromNotification = true;
-            i.removeExtra(RETURNFROMNOTIFICATION);
-        }
-
-        if (!oneTouchPanic) {
-            //TODO: reduce switch if possible
-            if (!returnFromNotification){
-                panicControl.setText(this.getResources().getString(R.string.KEY_PANIC_BTN_PANIC));
-                panicControl.setOnClickListener(this);
-            } else {
-                Toast.makeText(this, "Panic Job canceled!", Toast.LENGTH_SHORT).show();
-                cancelPanic();
-                panicControl.setText(this.getResources().getString(R.string.KEY_PANIC_BTN_PANIC));
-                panicControl.setOnClickListener(this);
-            }
-
-
-        } else {
-            Log.d(TAG, "Return From Notification: " + returnFromNotification);
-            if (!returnFromNotification ){
-                Toast.makeText(this, "Panic Job starting/continuing!", Toast.LENGTH_SHORT).show();
-
-                panicControl.setText(getString(R.string.KEY_PANIC_MENU_CANCEL));
-                panicControl.setOnClickListener(this);
-                doPanic();
-            }
-            else {
-                Toast.makeText(this, "Panic Job canceled!", Toast.LENGTH_SHORT).show();
-                cancelPanic();
-                panicControl.setText(this.getResources().getString(R.string.KEY_PANIC_BTN_PANIC));
-                panicControl.setOnClickListener(this);
-            }
-        }
-
+    protected void onStop() {
+        panicStatusDialog.dismiss();
+        super.onStop();
     }
 
-    /*gets called from the Notification*/
-    @Override
-    public void onNewIntent(Intent i) {
-        super.onNewIntent(i);
-        Log.d(TAG, "onNewIntent called");
-
-        boolean returnFromNotification = false;
-
-        if (i.hasExtra(RETURNFROMNOTIFICATION) && i.getIntExtra(RETURNFROMNOTIFICATION, 0) == ITCConstants.Panic.RETURN) {
-            // the app is being launched from the notification tray.
-            Log.d(TAG, "Has Extra: ReturnFrom -> Notification");
-            returnFromNotification = true;
-            i.removeExtra(RETURNFROMNOTIFICATION);
-
-        } else {
-            Log.d(TAG, "HAS NOT EXTRA RETURN FROM!");
-        }
-
-        if (!returnFromNotification){
-            panicControl.setText(this.getResources().getString(R.string.KEY_PANIC_BTN_PANIC));
-            panicControl.setOnClickListener(this);
-        } else {
-            Toast.makeText(this, "Panic Job canceled!", Toast.LENGTH_SHORT).show();
-            cancelPanic();
-            panicControl.setText(this.getResources().getString(R.string.KEY_PANIC_BTN_PANIC));
-            panicControl.setOnClickListener(this);
-        }
-
-        if (i.hasExtra("PanicCount"))
-            Log.d(ITCConstants.Log.ITC, "Panic Count at: " + i.getIntExtra("PanicCount", 0));
-
-
-        setIntent(i);
-
-    }
 
     @Override
-    public void onPause() {
-        unregisterReceiver(killReceiver);
-
-        super.onPause();
+    protected void onDestroy() {
+        // When our activity is stopped ensure we also stop the connection to the service
+        // this stops us leaking our activity into the system *bad*
+        if(scheduleClient != null)
+            scheduleClient.doUnbindService();
+        super.onDestroy();
     }
+
+    /**
+     * Callback method of the ScheduleServiceClient
+     **/
+
+    @Override
+    public void onCallbackReceived(String serviceState, int callback) {
+        Log.d(TAG, "onCallbackReceived ServiceState: " + serviceState + " -> " + callback );
+
+        if (serviceState.equals(ScheduleService.SERVICE_STATE)){
+            switch (callback){
+                case ScheduleService.SCHEDULESERVICECALLBACK_ONBIND:
+                    if (oneTouchPanic){
+                        Log.d(TAG, "SCHEDULESERVICECALLBACK_ONBIND");
+                        doPanic(true);
+                    }
+                    break;
+                case ScheduleService.SCHEDULESERVICECALLBACK_ALARMTASK_STOPPED:
+                    Log.d(TAG, "ScheduleService requests to stop panic");
+                    stopCountDownTimer();
+                    panicStatusDialog.cancel();
+                    break;
+                case ScheduleService.SCHEDULESERVICECALLBACK_ALARMTASK_STARTED:
+                    showPanicStatus("first sms will be sent within the next minute!");
+                    break;
+                case ScheduleService.SCHEDULESERVICECALLBACK_WIPETASK_STARTED:
+                    Log.d(TAG, "WipeTask started!");
+                    break;
+                case ScheduleService.SCHEDULESERVICECALLBACK_SERVICE_STOPPED:
+                    Log.d(TAG, "Scheduleservise stopped");
+                    break;
+                default:
+                    break;
+
+            }
+        } else if (serviceState.equals(ShoutService.SERVICE_STATE)){
+            switch (callback){
+               default:
+                case ShoutService.SHOUTSERVICECALLBACK_START:
+                    Log.d(TAG, "sendingSMS");
+                    showPanicStatus("sending SMS...");
+
+                    break;
+                case ShoutService.SHOUTSERVICECALLBACK_STOP:
+                    Log.d(TAG, "start countdown.");
+                    repeatSMSPanicCountdown();
+                    break;
+
+            }
+        }
+
+    }
+
+    /**
+     * implementing Activities OnClickListener
+     */
+    @Override
+    public void onClick(View v) {
+        if (v == panicControl && scheduleClient.isServiceBound()) {
+            doPanic(true);
+        }
+    }
+
+    /*private methods*/
+
+    private void stopCountDownTimer(){
+        Log.d(TAG, "stopCountdownTimer!!");
+        countDownTimer.cancel();
+    }
+
+    private void startCountdownTimer(final long countdownduration, final boolean firstShout){
+        panicState = ITCConstants.PanicState.IN_COUNTDOWN;
+        countDownTimer = new CountDownTimer(countdownduration,
+                ITCConstants.Duration.COUNTDOWNINTERVAL){
+
+            @Override
+            public void onTick(long millisUntilFinished) {
+                    showPanicStatus(
+                            getString(R.string.KEY_PANIC_COUNTDOWNMSG) +
+                                    " " + ((int) millisUntilFinished/1000-1) + " " +
+                                    getString(R.string.KEY_SECONDS)
+                    );
+            }
+
+            @Override
+            public void onFinish() {
+                Log.d(TAG, "onFininsh called");
+                if (firstShout){
+                    Log.d(TAG, "firstShout");
+                    try{
+                        scheduleClient.startPanic();
+                    } catch (InterruptedException e){
+                        Log.d(TAG, "Wiptask was interrupted: " + e.getMessage());
+                    }
+                    if (stealthMode){
+                        clearBackstackAndFinish();
+                    } else {
+                        showPanicStatus("Starting... ");
+                    }
+
+                } else {
+                    Log.d(TAG, "not firstShout");
+                    showPanicStatus("Repeating...");
+                }
+
+
+            }
+        };
+        countDownTimer.start();
+    }
+
+    private void showPanicStatus(String message){
+        panicStatusDialog.setMessage(message);
+        panicStatusDialog.show();
+
+    }
+
+    public void repeatSMSPanicCountdown(){
+        doPanic(false);
+    }
+    public void doPanic(boolean firstShout){
+        Log.d(TAG, "doPanic - fistShout: " + firstShout);
+        if (firstShout){
+            startCountdownTimer(10000, firstShout);
+        } else {
+            startCountdownTimer(58000, false);
+        }
+    }
+
 
     private void alignPreferences() {
         oneTouchPanic = false;
@@ -262,113 +292,17 @@ public class PanicActivity extends Activity implements OnClickListener, OnDismis
         }
     }
 
-    public void cancelPanic() {
-        if (panicState == ITCConstants.PanicState.IN_COUNTDOWN) {
-            panicStatusDialog.cancel();
-        }
-        //allways cancel Countdown on cancelPanic (-> we now use more PanicStates e.g. IN_CONTINUED_PANIC, where the cd might be ongoing)
-        cd.cancel();
-
-        Intent i = new Intent(this, PanicService.class);
-        i.putExtra(CANCELNOTIFICATION, " ");
-        i.setAction(PanicService.ACTION_CANCEL);
-        startService(i);
-        // Log.d(TAG, "panicState: :" + panicState);
-
-        //killActivity();
-        finish();
-    }
-
-    @Override
-    public void onBackPressed() {
-        Log.d(TAG, "onBackPressed: PanicState: " + panicState);
-        if (panicState != ITCConstants.PanicState.AT_REST) {
-            Log.w(TAG, "not allowed to press back button atm!");
-        } else {
-            super.onBackPressed();
-        }
-    }
-
-    @Override
-    public void onClick(View v) {
-        if (v == panicControl && panicState == ITCConstants.PanicState.AT_REST) {
-            doPanic();
-        } else if (v == panicControl && panicState != ITCConstants.PanicState.AT_REST) {
-            cancelPanic();
-
-        }
-
-    }
-
-    @Override
-    public void onDismiss(DialogInterface d) {
-
-    }
-
-    @Override
-    protected void onDestroy() {
-        panicStatusDialog.dismiss();
-        super.onDestroy();
-    }
-
-    public void updateProgressWindow(String message) {
-        panicStatusDialog.setMessage(message);
-    }
-
-    public void killActivity() {
-        Intent toKill = new Intent(PanicActivity.this, EndActivity.class)
-                .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(toKill);
-    }
-
     public void launchPreferences() {
         Intent toPrefs = new Intent(this, SettingsActivity.class);
         startActivity(toPrefs);
     }
 
-    private void doPanic() {
-        executeNewCountdown(ITCConstants.Duration.COUNTDOWN, true);
+    public void clearBackstackAndFinish(){
+        Intent intent = new Intent(getApplicationContext(), EndActivity.class);
+        ComponentName cn = intent.getComponent();
+        Intent mainIntent = IntentCompat.makeRestartActivityTask(cn);
+        ActivityCompat.finishAffinity(this);
+        startActivity(mainIntent);
     }
 
-    private void executeNewCountdown(final long countdownduration, final boolean firstShout){
-        panicState = ITCConstants.PanicState.IN_COUNTDOWN;
-        panicControl.setText(getString(R.string.KEY_PANIC_MENU_CANCEL));
-        cd = new CountDownTimer(countdownduration,
-                ITCConstants.Duration.COUNTDOWNINTERVAL) {
-            int t = (int)(countdownduration/1000) - 1 ;
-
-            @Override
-            public void onFinish() {
-                // start the panic
-                startPanicService(firstShout);
-                // scheduleAlarm();
-                // kill the activity doch lieber drin lassen?
-                //  killActivity();
-                //  FIXME: DONT FIXME ;) this causes an timing error:  killActivity();
-            }
-
-
-            @Override
-            public void onTick(long millisUntilFinished) {
-                panicStatusDialog.setMessage(
-                        getString(R.string.KEY_PANIC_COUNTDOWNMSG) +
-                                " " + t + " " +
-                                getString(R.string.KEY_SECONDS)
-                );
-                t--;
-            }
-
-        };
-        panicStatusDialog.show();
-        cd.start();
-    }
-
-    private void startPanicService(boolean firstShout){
-        Intent intent = new Intent(getApplicationContext(), PanicService.class);
-        if (firstShout){
-            intent.putExtra(ITCConstants.UPDATE_PANICSTATE, ITCConstants.PanicState.IN_FIRST_SHOUT);
-        }
-        intent.putExtra(RESULT_RECEIVER, resultReceiver);
-        startService(intent);
-    }
 }

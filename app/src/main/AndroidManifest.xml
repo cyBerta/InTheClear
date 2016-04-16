@@ -71,24 +71,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-       <!-- <activity
-            android:name=".PanicActivity"
-            android:configChanges="orientation|keyboardHidden"
-            android:icon="@drawable/panic"
-            android:label="Panic!"
-            android:launchMode="singleInstance"
-            android:screenOrientation="portrait"
-            android:taskAffinity=".apps.Panic"
-            android:theme="@android:style/Theme.NoTitleBar"
-            android:windowSoftInputMode="stateHidden" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity> -->
         <activity
-                android:name=".PanicActivityNew"
+                android:name=".PanicActivity"
                 android:configChanges="orientation|keyboardHidden"
                 android:icon="@drawable/panic"
                 android:label="Panic!"
@@ -124,18 +108,6 @@
         </activity>
         <activity android:name="info.guardianproject.utils.EndActivity" />
 
-        <service
-            android:name=".PanicService"
-            android:enabled="true" >
-            <intent-filter>
-                <action android:name="info.guardianproject.panic.action.TRIGGER" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </service>
-        <service
-            android:name=".WipeService"
-            android:enabled="true" />
 
         <receiver
             android:name=".PanicWidget"
@@ -151,8 +123,13 @@
         </receiver>
 
 
-        <service android:name=".ScheduleService" />
-        <service android:name=".NotifyService" />
+        <service android:name=".ScheduleService" >
+            <intent-filter>
+                <action android:name="info.guardianproject.panic.action.TRIGGER" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
         <service android:name=".ShoutService" />
 
 

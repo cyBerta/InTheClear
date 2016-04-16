@@ -46,7 +46,7 @@ public class PanicWidget extends AppWidgetProvider {
         final int N = allPanicWidgetsIds.length;
 
         if (startAction == true){
-            Intent intent = new Intent(context, PanicActivityNew.class);
+            Intent intent = new Intent(context, PanicActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             context.startActivity(intent);

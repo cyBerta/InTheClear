@@ -56,9 +56,9 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-	Log.i("ScheduleService", "Received startAlarmTask id " + startId + ": " + intent.getAction());
-
-		if (intent.getAction() != null){
+		Log.i("ScheduleService", "Received startAlarmTask id " + startId);
+		if (intent != null && intent.getAction() != null){
+			Log.i("ScheduleService", "Received startAlarmTask id " + startId + ": " + intent.getAction());
 			if (intent.getAction().equals(STOP_SCHEDULE_SERVICE)) {
 				cancelAlarmTask();
 				cancelWipeTask();
@@ -131,7 +131,9 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 	}
 
 	public void cancelWipeTask(){
-		wipeTask.stopPIMWiper();
+		if (wipeTask != null){
+			wipeTask.stopPIMWiper();
+		}
 		broadcastServiceState(SCHEDULESERVICECALLBACK_WIPETASK_STOPPED);
 
 	}

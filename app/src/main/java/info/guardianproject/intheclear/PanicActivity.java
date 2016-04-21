@@ -16,9 +16,11 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import info.guardianproject.utils.EndActivity;
+import info.guardianproject.views.PanicItem;
 
 import java.util.ArrayList;
 
@@ -29,7 +31,7 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
     private static final String TAG = PanicActivity.class.getName();
     SharedPreferences sp;
     boolean oneTouchPanic;
-    ListView listView;
+    //ListView listView;
     TextView shoutReadout, panicProgress, countdownReadout;
     Button controlPanic, cancelCountdown, panicControl;
     CountDownTimer countDownTimer;
@@ -57,7 +59,7 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
 
         panicControl = (Button) findViewById(R.id.panicControl);
         shoutReadout = (TextView) findViewById(R.id.shoutReadout);
-        listView = (ListView) findViewById(R.id.wipeItems);
+//        listView = (ListView) findViewById(R.id.wipeItems);
 
         // if this is not a cell phone, then no need to show the panic message
         if (TextUtils.isEmpty(PhoneInfo.getIMEI())) {
@@ -66,8 +68,8 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
             shoutReadoutTitle.setVisibility(View.GONE);
         } else {
             String panicMsg = sp.getString(ITCConstants.Preference.DEFAULT_PANIC_MSG, "");
-            shoutReadout.setText("\n\n" + panicMsg + "\n\n"
-                    + ShoutController.buildShoutData(getResources()));
+            shoutReadout.setText( panicMsg
+                    +"\n\n"+ ShoutController.buildShoutData(getResources()));
         }
 
         panicStatusDialog = new ProgressDialog(this);
@@ -98,12 +100,16 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
         alignPreferences();
         panicControl.setOnClickListener(this);
 
+
+
+        // listView.setAdapter(new WipeItemAdapter(this, wipeTasks));
+        // listView.setChoiceMode(ListView.CHOICE_MODE_NONE);
+        // listView.setClickable(false);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-
         final ArrayList<WipeItem> wipeTasks = new ArrayList<WipeItem>(6);
         wipeTasks.add(0,
                 new WipeItem(R.string.KEY_WIPE_WIPECONTACTS, sp, ITCConstants.Preference.DEFAULT_WIPE_CONTACTS));
@@ -118,10 +124,18 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
         wipeTasks.add(5,
                 new WipeItem(R.string.KEY_WIPE_SDCARD, sp, ITCConstants.Preference.DEFAULT_WIPE_FOLDERS));
 
-        listView.setAdapter(new WipeItemAdapter(this, wipeTasks));
-        listView.setChoiceMode(ListView.CHOICE_MODE_NONE);
-        listView.setClickable(false);
+        LinearLayout wipeItems = (LinearLayout) findViewById(R.id.wipeItems);
+        wipeItems.removeAllViews();
+        for (WipeItem item : wipeTasks){
+            PanicItem panicItem = new PanicItem(this);
+            panicItem.setItemText(getString(item.resId));
+            Log.d(TAG, getString(item.resId));
+            panicItem.setItemSelected(item.selected);
+            wipeItems.addView(panicItem);
+        }
+
         stealthMode = sp.getBoolean("stealthMode", true);
+
     }
 
 

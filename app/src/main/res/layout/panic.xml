@@ -1,92 +1,106 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="#ffffff"
     android:orientation="vertical"
     android:weightSum="1.0" >
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dip"
-        android:layout_weight="0.15"
-        android:orientation="horizontal"
-        android:weightSum="1.0" >
-
-        <ImageView
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
+    <ImageView
+            android:paddingTop="5dp"
+            android:id="@+id/logo"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
             android:layout_marginLeft="20dip"
             android:layout_marginRight="20dip"
-            android:layout_weight="0.25"
+
+            android:scaleType="fitXY"
             android:src="@drawable/sm3cropped" />
-
-        <TextView
+    <TextView
             android:id="@+id/panicTitle"
-            android:layout_width="0dip"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.75"
-            android:text="@string/KEY_PANIC_TITLE"
-            android:textColor="#ff000000"
-            android:textSize="26sp" />
-    </LinearLayout>
-
-    <ScrollView
-        android:layout_width="fill_parent"
-        android:layout_height="0dip"
-        android:scrollbarAlwaysDrawVerticalTrack="true"
-        android:layout_weight="0.85" >
-
-        <LinearLayout
-            android:id="@+id/panicMsgHolder"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="10dip" >
+            android:text="@string/KEY_PANIC_TITLE"
+            android:layout_alignTop="@id/logo"
+            android:layout_alignBottom="@+id/logo"
+            android:gravity="center"
+            android:textColor="#ff000000"
+            android:textSize="26sp" />
 
-            <TextView
-                android:id="@+id/shoutReadoutTitle"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/KEY_PANIC_MSG_TITLE"
-                android:textColor="#000000"
-                android:textSize="20sp"
-                android:visibility="visible"
-            />
 
-            <TextView
-                android:id="@+id/shoutReadout"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:textColor="#000000"
-                android:visibility="visible"
-            />
+    <ScrollView android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                android:layout_below="@id/panicTitle"
+                android:layout_above="@+id/panicControl"
+        >
+            <LinearLayout
+                    android:id="@+id/panicMsgHolder"
+                    android:layout_width="fill_parent"
+                    android:layout_height="0dip"
+                    android:orientation="vertical"
+                    android:padding="10dip"
+            >
 
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dip"
-                android:layout_marginTop="20dip"
-                android:text="@string/KEY_PANIC_WIPE_TITLE"
-                android:textColor="#000000"
-                android:textSize="20sp" />
+                <TextView
+                        android:id="@+id/shoutReadoutTitle"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/KEY_PANIC_MSG_TITLE"
+                        android:textColor="#000000"
+                        android:textSize="20sp"
+                        android:visibility="visible"
+                />
 
-            <ListView
-                android:id="@+id/wipeItems"
-                android:layout_width="fill_parent"
-                android:layout_height="400dip"/>
-        </LinearLayout>
-    </ScrollView>
+                <TextView
+                        android:id="@+id/shoutReadout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="#000000"
+                        android:visibility="visible"
+                        android:paddingLeft="15dp"
+                        android:textStyle="italic"
 
+                />
+
+                <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="20dip"
+                        android:layout_marginTop="20dip"
+                        android:text="@string/KEY_PANIC_WIPE_TITLE"
+                        android:textColor="#000000"
+                        android:textSize="20sp" />
+
+                <LinearLayout android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:id="@+id/wipeItems"
+                              android:orientation="vertical"
+                >
+
+                </LinearLayout>
+                <!--            <ListView
+                                android:id="@+id/wipeItems"
+                                android:layout_width="fill_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.0"
+                            />-->
+            </LinearLayout>
+        </ScrollView>
+
+
+    <!--
+    android:background="@color/maRed"
+-->
     <Button
         android:id="@+id/panicControl"
         android:layout_width="match_parent"
-        android:background="@color/maRed"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="3dp"
         android:textScaleX="2"
         android:textSize="40sp"
         android:text="@string/KEY_PANIC_BTN_PANIC"
-        android:textColor="@android:color/white"
-        android:textStyle="bold" />
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        android:layout_alignParentBottom="true"
+    />
 
-</LinearLayout>
+</RelativeLayout>

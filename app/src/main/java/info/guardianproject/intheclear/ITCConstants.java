@@ -190,6 +190,7 @@ public class ITCConstants {
         public static final String DEFAULT_WIPE_FOLDERS = "DefaultWipeFolders";
         public static final String DEFAULT_WIPE_FOLDER_LIST = "DefaultWipeFoldersList";
         public static final String DEFAULT_ONE_TOUCH_PANIC = "DefaultOneTouchPanic";
+        public static final String DEFAULT_HIDE_PANIC_ACTION = "DefaultHidePanicAction";
         public static final String DEFAULT_ADD_TO_HOMESCREEN = "DefaultHomescreenPanicButton";
         public static final String IS_VIRGIN_USER = "IsVirginUser";
     }

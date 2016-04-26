@@ -134,7 +134,7 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
             wipeItems.addView(panicItem);
         }
 
-        stealthMode = sp.getBoolean("stealthMode", true);
+        stealthMode = sp.getBoolean(ITCConstants.Preference.DEFAULT_HIDE_PANIC_ACTION, true);
 
     }
 

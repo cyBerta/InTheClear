@@ -22,7 +22,15 @@
         <CheckBoxPreference
             android:key="DefaultOneTouchPanic"
             android:summary="@string/KEY_PREF_ONETOUCH_DIALOG"
-            android:title="@string/KEY_PREF_ONETOUCH" />
+            android:title="@string/KEY_PREF_ONETOUCH"
+        />
+
+        <CheckBoxPreference
+                android:key="DefaultHidePanicAction"
+                android:summary="@string/KEY_PREF_HIDEPANIC_ACTION"
+                android:title="@string/KEY_PREF_HIDEPANIC_TITLE"
+                android:defaultValue="true"
+        />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="DefaultWipers"

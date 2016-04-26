@@ -45,7 +45,9 @@
     <string name="KEY_PREF_WIPECALENDAR">Wipe Your Calendar</string>
     <string name="KEY_PREF_WIPESMS">Wipe Your SMS Log</string>
     <string name="KEY_PREF_ONETOUCH">1-Touch Panic?</string>
-    <string name="KEY_PREF_ONETOUCH_DIALOG">Check this if you DO NOT want confirmation before executing Panic!  Otherwise, you will have to confirm before Panic! executes.</string>
+    <string name="KEY_PREF_ONETOUCH_DIALOG">Check this if you DO NOT want confirmation before executing Panic! Otherwise, you will have to confirm before Panic! executes.</string>
+    <string name="KEY_PREF_HIDEPANIC_TITLE">Hide app</string>
+    <string name="KEY_PREF_HIDEPANIC_ACTION">Check this if you want the app to become hidden after the panic action has been triggered.</string>
     <string name="KEY_MAIN_TOPREFS">Settings</string>
     <string name="KEY_MAIN_TOWIZARD">Setup Wizard</string>
     <string name="KEY_EMERGENCY_SMS_TITLE">Emergency SMS</string>

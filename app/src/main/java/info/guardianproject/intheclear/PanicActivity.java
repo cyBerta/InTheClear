@@ -57,8 +57,6 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
 
         // Create a new service client and bind our activity to this service
         scheduleClient = new ScheduleServiceClient(this);
-        //scheduleClient.startService();
-        //scheduleClient.doBindService();
 
         sp = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 
@@ -93,15 +91,20 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
         );
         panicStatusDialog.setTitle(getResources().getString(R.string.KEY_PANIC_BTN_PANIC));
         panicStatusDialog.setCanceledOnTouchOutside(false);
-
+        panicStatusDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                if (countDownTimer != null) {
+                    countDownTimer.cancel();
+                }
+                PanicActivity.this.finish();
+            }
+        });
     }
 
    @Override
     public void onBackPressed() {
        if (panicStatusDialog.isShowing()) {
-           if (countDownTimer != null) {
-               countDownTimer.cancel();
-           }
            panicStatusDialog.dismiss();
        }
        super.onBackPressed();
@@ -119,9 +122,6 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
         if (isDeleteSMS() && !isDefaultApp){
             askForDefaultSMSPermission();
         }
-        // listView.setAdapter(new WipeItemAdapter(this, wipeTasks));
-        // listView.setChoiceMode(ListView.CHOICE_MODE_NONE);
-        // listView.setClickable(false);
     }
 
     @Override
@@ -160,9 +160,9 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
 
     @Override
     protected void onStop() {
-        panicStatusDialog.dismiss();
         if(scheduleClient != null)
             scheduleClient.doUnbindService();
+
         super.onStop();
     }
 
@@ -476,7 +476,5 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
             }
             return start();
         }
-
-
     }
 }

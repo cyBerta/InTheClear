@@ -6,7 +6,7 @@
 
     <uses-sdk
         android:minSdkVersion="11"
-        android:targetSdkVersion="22" />
+        android:targetSdkVersion="23" />
 
     <uses-feature
         android:name="android.hardware.telephony"
@@ -30,7 +30,7 @@
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-
+    <uses-permission android:name="ANDROID.PERMISSION.SEND_RESPOND_VIA_MESSAGE"/>
     <application
         android:allowBackup="false"
         android:description="@string/app_description"
@@ -83,7 +83,6 @@
                 android:windowSoftInputMode="stateHidden" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -108,6 +107,19 @@
         </activity>
         <activity android:name="info.guardianproject.utils.EndActivity" />
 
+        <activity android:name="info.guardianproject.utils.EmptySMSActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SENDTO" />
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="sms" />
+                <data android:scheme="smsto" />
+                <data android:scheme="mms" />
+                <data android:scheme="mmsto" />
+            </intent-filter>
+        </activity>
+
 
         <receiver
             android:name=".PanicWidget"
@@ -122,7 +134,6 @@
                 android:resource="@xml/panic_widget_info"/>
         </receiver>
 
-
         <service android:name=".ScheduleService" >
             <intent-filter>
                 <action android:name="info.guardianproject.panic.action.TRIGGER" />
@@ -132,6 +143,46 @@
         </service>
         <service android:name=".ShoutService" />
 
+        <receiver android:name="info.guardianproject.utils.EmptyMmsReceiver"
+                  android:permission="android.permission.BROADCAST_WAP_PUSH">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.WAP_PUSH_DELIVER" />
+                <data android:mimeType="application/vnd.wap.mms-message" />
+            </intent-filter>
+        </receiver>
+        
+        <receiver android:name="info.guardianproject.utils.EmptySMSReceiver"
+                  android:permission="android.permission.BROADCAST_SMS">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_DELIVER" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Service that delivers messages from the phone "quick response" -->
+        <service android:name="info.guardianproject.utils.EmptyHeadlessSmsSendService"
+                 android:permission="android.permission.SEND_RESPOND_VIA_MESSAGE"
+                 android:exported="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.RESPOND_VIA_MESSAGE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="sms" />
+                <data android:scheme="smsto" />
+                <data android:scheme="mms" />
+                <data android:scheme="mmsto" />
+            </intent-filter>
+        </service>
+
+        <!-- BroadcastReceiver that listens for incoming SMS messages -->
+
+      <!--  <receiver android:name=".SMSSender$SMSConfirm">
+            <intent-filter>
+                <action android:name="android.provider.Telephony.SMS_DELIVER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.provider.Telephony.WAP_PUSH_DELIVER" />
+                <data android:mimeType="application/vnd.wap.mms-message" />
+            </intent-filter>
+        </receiver>-->
 
         <!--    <activity android:name=".PanicWidgetConfigureActivity" >
                 <intent-filter>

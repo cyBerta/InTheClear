@@ -3,9 +3,12 @@ package info.guardianproject.intheclear;
 import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.util.Log;
+import info.guardianproject.utils.Logger;
 
 import java.util.Calendar;
 
@@ -34,6 +37,9 @@ public class AlarmTask implements Runnable{
 
 	private NotificationManager mNM;
 	long timeInMillies;
+	private boolean isRunning;
+	private long timeStarted;
+	private  ShoutServiceCallbackReceiver shoutServiceCallbackReceiver;
 
 
 	public AlarmTask(Context context, long timeInMillies) {
@@ -41,6 +47,8 @@ public class AlarmTask implements Runnable{
 		this.context = context;
 		this.am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 		mNM = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+		shoutServiceCallbackReceiver = new ShoutServiceCallbackReceiver();
+
 	}
 
 	/**
@@ -56,7 +64,9 @@ public class AlarmTask implements Runnable{
 	public void cancel(){
 		am.cancel(pendingIntent);
 		mNM.cancel(ShoutService.getNotificationId());
-		Log.i(TAG, "AlarmTask cancelled");
+		this.context.unregisterReceiver(shoutServiceCallbackReceiver);
+		isRunning = false;
+		Logger.logD(TAG, "AlarmTask cancelled");
 	}
 	
 	@Override
@@ -73,6 +83,10 @@ public class AlarmTask implements Runnable{
 		} else {
 			am.set(AlarmManager.RTC_WAKEUP, timeInMillies, pendingIntent);
 		}
+		IntentFilter intentFilter = new IntentFilter(ShoutService.class.getName());
+		this.context.registerReceiver(shoutServiceCallbackReceiver, intentFilter);
+		isRunning = true;
+
 	}
 
 	/**
@@ -83,5 +97,34 @@ public class AlarmTask implements Runnable{
 		Intent intent = new Intent(context, ShoutService.class);
 		intent.putExtra(ShoutService.INTENT_NOTIFY, true);
 		return PendingIntent.getService(context, 0, intent, 0);
+	}
+
+	public boolean isRunning() {
+		return isRunning;
+	}
+
+	public long getLastStartTime(){
+		Logger.logD(TAG, "last Shout AlarmTask: " + timeStarted);
+		return timeStarted;
+	}
+
+	// Receives Callbacks from Shout service in order to track the time of the last sent sms
+	private class ShoutServiceCallbackReceiver extends BroadcastReceiver {
+
+		public ShoutServiceCallbackReceiver(){
+			super();
+		}
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if (intent.getAction() != null){
+				if (intent.getAction().equals(ShoutService.class.getName())){
+					int serviceState = intent.getIntExtra(ShoutService.SERVICE_STATE, ShoutService.SHOUTSERVICECALLBACK_UNKNOWN);
+					if (serviceState == ShoutService.SHOUTSERVICECALLBACK_START){
+						timeStarted = System.currentTimeMillis();
+					}
+				}
+			}
+
+		}
 	}
 }

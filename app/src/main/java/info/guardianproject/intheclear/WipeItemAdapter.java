@@ -21,11 +21,11 @@ public class WipeItemAdapter extends ArrayAdapter<WipeItem> {
         WipeItem wipeItem = getItem(position);
 
         ListView listView = (ListView) parent;
-        listView.setItemChecked(position, wipeItem.selected);
+        listView.setItemChecked(position, wipeItem.getSelected());
 
         CheckedTextView ctv = (CheckedTextView) super.getView(position, convertView, parent);
-        ctv.setChecked(wipeItem.selected);
-        ctv.setText(wipeItem.resId);
+        ctv.setChecked(wipeItem.getSelected());
+        ctv.setText(wipeItem.getResId());
         ctv.setTextColor(ctv.getResources().getColor(android.R.color.black));
 
         return ctv;

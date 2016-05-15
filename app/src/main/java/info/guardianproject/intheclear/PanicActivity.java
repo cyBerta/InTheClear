@@ -145,9 +145,9 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
         wipeItems.removeAllViews();
         for (WipeItem item : wipeTasks){
             PanicItem panicItem = new PanicItem(this);
-            panicItem.setItemText(getString(item.resId));
-            Log.d(TAG, getString(item.resId));
-            panicItem.setItemSelected(item.selected);
+            panicItem.setItemText(getString(item.getResId()));
+            Log.d(TAG, getString(item.getResId()));
+            panicItem.setItemSelected(item.getSelected());
             wipeItems.addView(panicItem);
         }
 

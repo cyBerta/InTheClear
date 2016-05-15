@@ -64,7 +64,11 @@ public class AlarmTask implements Runnable{
 	public void cancel(){
 		am.cancel(pendingIntent);
 		mNM.cancel(ShoutService.getNotificationId());
-		this.context.unregisterReceiver(shoutServiceCallbackReceiver);
+		try {
+			this.context.unregisterReceiver(shoutServiceCallbackReceiver);
+		} catch (IllegalArgumentException iae){
+			Logger.logD(TAG, "shout service callback receiver was not registered");
+		}
 		isRunning = false;
 		Logger.logD(TAG, "AlarmTask cancelled");
 	}

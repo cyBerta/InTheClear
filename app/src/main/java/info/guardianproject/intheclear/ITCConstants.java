@@ -37,6 +37,7 @@ public class ITCConstants {
         public static final int NOT_AVAILABLE = 5;
         public static final int A_OK = 1;
         public static final int FAIL = -1;
+        public static final int RETURN_FROM_DEFAULT_SMS_REQUEST = 7;
     }
 
     public static class ContentTargets {

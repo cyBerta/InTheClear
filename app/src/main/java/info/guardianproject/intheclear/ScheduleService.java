@@ -1,12 +1,17 @@
 package info.guardianproject.intheclear;
 
+import android.app.Activity;
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.telephony.SmsManager;
 import android.util.Log;
+import android.widget.Toast;
 import info.guardianproject.utils.Logger;
 /**
  * TODO: check if this service could be shut down after sending the alarm manager the messsage to repeat the notifications
@@ -26,6 +31,7 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 	public final static int SCHEDULESERVICECALLBACK_WIPETASK_STOPPED = 6;
 	public final static int SCHEDULESERVICECALLBACK_SERVICE_STOPPED = 7;
 
+
 	public final static String STOP_SCHEDULE_SERVICE = "StopService";
 	public final static String STOP_SHOUT_TASK = "StopShoutTask";
 	public final static String STOP_WIPE_TASK = "StopWipeTask";
@@ -34,6 +40,10 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 	private AlarmTask alarmTask;
 	private PIMWiper wipeTask;
 	private SharedPreferences prefs;
+
+	public long getAlarmTaskStartTime() {
+		return alarmTask.getLastStartTime();
+	}
 
 
 	/**
@@ -75,6 +85,7 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 		// We want this service to continue running until it is explicitly stopped, so return sticky.
 		return START_STICKY;
 	}
+
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -135,9 +146,23 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 			wipeTask.stopPIMWiper();
 		}
 		broadcastServiceState(SCHEDULESERVICECALLBACK_WIPETASK_STOPPED);
-
 	}
 
+	public boolean isAlarmTaskRunning() {
+		if (alarmTask != null && alarmTask.isRunning()){
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public boolean isWipeTaskRunning(){
+		if (wipeTask != null && wipeTask.isAlive()){
+			return true;
+		} else {
+			return false;
+		}
+	}
 
 	@Override
 	public void onDestroy(){
@@ -151,6 +176,33 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 	@Override
 	public void onSMSSent(Intent intent) {
 		info.guardianproject.utils.Logger.logD(TAG, "onSMSSent: " + Logger.intentToString(intent));
+
+		/* TODO: implement result handling
+		int resultCode = intent.getIntExtra("RESULTCODE", 0);
+		switch (resultCode)
+		{
+			case Activity.RESULT_OK:
+				Toast.makeText(getBaseContext(), "SMS sent",
+						Toast.LENGTH_SHORT).show();
+				break;
+			case SmsManager.RESULT_ERROR_GENERIC_FAILURE:
+				Toast.makeText(getBaseContext(), "Generic failure",
+						Toast.LENGTH_SHORT).show();
+				break;
+			case SmsManager.RESULT_ERROR_NO_SERVICE:
+				Toast.makeText(getBaseContext(), "No service",
+						Toast.LENGTH_SHORT).show();
+				break;
+			case SmsManager.RESULT_ERROR_NULL_PDU:
+				Toast.makeText(getBaseContext(), "Null PDU",
+						Toast.LENGTH_SHORT).show();
+				break;
+			case SmsManager.RESULT_ERROR_RADIO_OFF:
+				Toast.makeText(getBaseContext(), "Radio off",
+						Toast.LENGTH_SHORT).show();
+				break;
+		}*/
+
 	}
 
 	private void broadcastServiceState(int state){

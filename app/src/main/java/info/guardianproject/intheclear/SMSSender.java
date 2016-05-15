@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.Nullable;
 import android.telephony.SmsManager;
 import android.util.Log;
 
@@ -38,7 +39,13 @@ public class SMSSender {
         this.smsconfirm = SMSConfirm.getInstance();
     }
 
-    public void sendSMS(String recipient, String messageData) {
+    /**
+     *
+     * @param recipient
+     * @param messageData
+     */
+    public void sendSMS(String recipient, String messageData){
+        //1. Build Intents for the SMSConfirm BroadcastReceiver
         Intent initiatedIntent = new Intent(SMSConfirmInterface.INITIATED);
         initiatedIntent.putExtra(SMSConfirmInterface.recipient, recipient);
         initiatedIntent.putExtra(SMSConfirmInterface.messageData, messageData);
@@ -91,7 +98,7 @@ public class SMSSender {
      * Handles registering itself to the contexts on its own.
      */
     public static class SMSConfirm extends BroadcastReceiver {
-        private static final SMSConfirm INSTANCE = new SMSConfirm();
+        private static final SMSConfirm INSTANCE = new SMSConfirm(null);
         private Set<String> contexts;
 
         private List<WeakReference<SMSConfirmInterface>> confirmSMS;
@@ -104,10 +111,12 @@ public class SMSSender {
             return INSTANCE;
         }
 
+        public SMSConfirm(){}
+
         /**
          * Private constructor as this is a Singleton
          */
-        private SMSConfirm(){
+        private SMSConfirm(Object o){
             contexts = Collections.synchronizedSet(new HashSet());
             confirmSMS = Collections.synchronizedList(new ArrayList<WeakReference<SMSConfirmInterface>>());
         }
@@ -164,6 +173,26 @@ public class SMSSender {
             intentFilter.addAction(SMSConfirmInterface.INITIATED);
             intentFilter.addAction(SMSConfirmInterface.SENT);
             intentFilter.addAction(SMSConfirmInterface.DELIVERED);
+            /**
+             *  <action android:name="android.intent.action.SEND" />
+             <action android:name="android.intent.action.SENDTO" />
+             <category android:name="android.intent.category.DEFAULT" />
+             <category android:name="android.intent.category.BROWSABLE" />
+             <data android:scheme="sms" />
+             <data android:scheme="smsto" />
+             <data android:scheme="mms" />
+             <data android:scheme="mmsto" />
+             */
+            intentFilter.addAction("android.provider.Telephony.SMS_DELIVER");
+            intentFilter.addAction(Intent.ACTION_SEND);
+            intentFilter.addAction(Intent.ACTION_SENDTO);
+            intentFilter.addCategory(Intent.CATEGORY_DEFAULT);
+            intentFilter.addCategory(Intent.CATEGORY_BROWSABLE);
+            intentFilter.addDataScheme("sms");
+            intentFilter.addDataScheme("smsto");
+            intentFilter.addDataScheme("mms");
+            intentFilter.addDataScheme("mmsto");
+
             c.registerReceiver(INSTANCE, intentFilter);
 
             if (c instanceof SMSConfirmInterface){
@@ -201,6 +230,7 @@ public class SMSSender {
          */
         @Override
         public void onReceive(Context context, Intent intent) {
+            intent.putExtra("RESULTCODE", getResultCode());
             if (!intent.hasExtra(SMSConfirmInterface.resultCode)){
                 intent.putExtra(SMSConfirmInterface.resultCode, getResultCode());
             }

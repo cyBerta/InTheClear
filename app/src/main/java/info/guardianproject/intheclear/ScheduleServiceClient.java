@@ -2,6 +2,7 @@ package info.guardianproject.intheclear;
 
 import android.content.*;
 import android.os.IBinder;
+import android.util.Log;
 import info.guardianproject.utils.Logger;
 
 /**
@@ -109,6 +110,31 @@ public class ScheduleServiceClient {
 	public void stopPanic(){
 		stopAlarm();
 		stopWiping();
+	}
+
+	public boolean isSMSPanicRunning(){
+		boolean isRunning = false;
+		if (mBoundService != null){
+			isRunning = mBoundService.isAlarmTaskRunning();
+		}
+		return isRunning;
+	}
+
+	public long getLastShoutTime(){
+		long lastShout = 0;
+		if (mBoundService != null){
+			lastShout = mBoundService.getAlarmTaskStartTime();
+			Log.d(TAG, "Last Shout ServiceClient: " + lastShout);
+		}
+		return lastShout;
+	}
+
+	public boolean isWipePanicRunning(){
+		boolean isRunning = false;
+		if (mBoundService != null){
+			isRunning = mBoundService.isWipeTaskRunning();
+		}
+		return isRunning;
 	}
 
 	/**

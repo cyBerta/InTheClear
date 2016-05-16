@@ -69,6 +69,7 @@ public class AlarmTask implements Runnable{
 		} catch (IllegalArgumentException iae){
 			Logger.logD(TAG, "shout service callback receiver was not registered");
 		}
+		timeStarted = 0L;
 		isRunning = false;
 		Logger.logD(TAG, "AlarmTask cancelled");
 	}

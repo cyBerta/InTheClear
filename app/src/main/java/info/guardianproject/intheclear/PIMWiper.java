@@ -32,11 +32,25 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
+
 public class PIMWiper extends Thread {
+
+    public interface PIMWiperCallback{
+        void onWipeCategoryStart(int category);
+        void onWipeCategoryFinished(int category);
+        void onWipeCategoryFailed(int category, Exception e);
+        void onWipeStarted();
+        void onWipeCancelled();
+        void onWipeFinished();
+    }
+
     private static ContentResolver cr;
     private static AccountManager am;
     private static Context c;
     private static boolean isRunning = false;
+
+    PIMWiperCallback pimWiperCallback;
+
 
     private boolean contacts, photos, callLog, sms, calendar, sdcard;
 
@@ -62,42 +76,59 @@ public class PIMWiper extends Thread {
         PIMWiper.cr = c.getContentResolver();
         PIMWiper.am = AccountManager.get(c);
 
+        if (c instanceof PIMWiperCallback){
+            pimWiperCallback = (PIMWiperCallback) c;
+        }
+
+
     }
 
     @Override
     public void run() {
         try {
             isRunning = true;
+            onWipeStarted();
             // FIRST, you must turn off sync or else you get the
             // "Deleted Contacts" error...
             preventSync();
 
             if (contacts) {
+                onWipeCategoryStart(ITCConstants.Wipe.CONTACTS);
                 PIMWiper.wipeContacts();
                 PIMWiper.wipePhoneNumbers();
                 PIMWiper.wipeEmail();
+                onWipeCategoryFinished(ITCConstants.Wipe.CONTACTS);
             }
 
             if (photos) {
+                onWipeCategoryStart(ITCConstants.Wipe.PHOTOS);
                 PIMWiper.wipePhotos();
                 PIMWiper.wipeVideos();
                 PIMWiper.wipeImageThumnbnails();
                 PIMWiper.wipeVideoThumbnails();
+                onWipeCategoryFinished(ITCConstants.Wipe.PHOTOS);
             }
 
             if (callLog) {
+                onWipeCategoryStart(ITCConstants.Wipe.CALLLOG);
                 PIMWiper.wipeCallLog();
+                onWipeCategoryFinished(ITCConstants.Wipe.CALLLOG);
             }
 
             if (sms) {
+                onWipeCategoryStart(ITCConstants.Wipe.SMS);
                 PIMWiper.wipeSMS();
+                onWipeCategoryFinished(ITCConstants.Wipe.SMS);
             }
 
             if (calendar) {
+                onWipeCategoryStart(ITCConstants.Wipe.CALENDAR);
                 PIMWiper.wipeCalendar();
+                onWipeCategoryFinished(ITCConstants.Wipe.CALENDAR);
             }
 
             if (sdcard) {
+                onWipeCategoryFinished(ITCConstants.Wipe.SDCARD);
                 new FolderIterator();
                 ArrayList<File> folders = FolderIterator.getFoldersOnSDCard();
                 Log.d(ITCConstants.Log.ITC, "Preparing to wipe " + folders.size()
@@ -105,12 +136,52 @@ public class PIMWiper extends Thread {
                 for (File f : folders) {
                     PIMWiper.wipeFolder(f);
                 }
-
+                onWipeCategoryFinished(ITCConstants.Wipe.SDCARD);
             }
+
+            onWipeFinished();
+
         } catch (IOException e) {
             Log.d(ITCConstants.Log.ITC, "Wipe has failed: " + e);
+            onWipeCategoryFailed(0, e);
         } catch (PIMWiperStoppedException e){
+            onWipeCancelled();
             Log.d(ITCConstants.Log.ITC, "PIMWiper Stopped!");
+        }
+    }
+
+    private void onWipeCategoryStart(int category){
+        if (pimWiperCallback != null){
+            pimWiperCallback.onWipeCategoryStart(category);
+        }
+    }
+
+    void onWipeCategoryFinished(int category){
+        if (pimWiperCallback != null){
+            pimWiperCallback.onWipeCategoryFinished(category);
+        }
+    }
+
+    void onWipeCategoryFailed(int category, Exception e){
+        if (pimWiperCallback != null){
+            pimWiperCallback.onWipeCategoryFailed(category, e);
+        }
+    }
+
+    void onWipeStarted(){
+        if (pimWiperCallback != null){
+            pimWiperCallback.onWipeStarted();
+        }
+    }
+
+    void onWipeCancelled(){
+        if (pimWiperCallback != null){
+            pimWiperCallback.onWipeCancelled();
+        }
+    }
+    void onWipeFinished(){
+        if (pimWiperCallback != null){
+            pimWiperCallback.onWipeFinished();
         }
     }
 

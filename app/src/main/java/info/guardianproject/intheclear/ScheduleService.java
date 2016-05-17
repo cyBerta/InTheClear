@@ -17,7 +17,7 @@ import info.guardianproject.utils.Logger;
  * TODO: check if this service could be shut down after sending the alarm manager the messsage to repeat the notifications
  * ANSWER: NO, as the schedule services alarm task holds the pendingIntent which is used as a signature for cancelling alarmManager
  * */
-public class ScheduleService extends Service implements SMSSender.SMSConfirmInterface{
+public class ScheduleService extends Service implements SMSSender.SMSConfirmInterface, PIMWiper.PIMWiperCallback{
 
 
 
@@ -43,6 +43,36 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 
 	public long getAlarmTaskStartTime() {
 		return alarmTask.getLastStartTime();
+	}
+
+	@Override
+	public void onWipeCategoryStart(int category) {
+
+	}
+
+	@Override
+	public void onWipeCategoryFinished(int category) {
+
+	}
+
+	@Override
+	public void onWipeCategoryFailed(int category, Exception e) {
+
+	}
+
+	@Override
+	public void onWipeStarted() {
+		broadcastServiceState(SCHEDULESERVICECALLBACK_WIPETASK_STARTED);
+	}
+
+	@Override
+	public void onWipeCancelled() {
+		broadcastServiceState(SCHEDULESERVICECALLBACK_WIPETASK_STOPPED);
+	}
+
+	@Override
+	public void onWipeFinished() {
+		broadcastServiceState(SCHEDULESERVICECALLBACK_WIPETASK_STOPPED);
 	}
 
 
@@ -130,7 +160,7 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 	public void startWipeTask() throws InterruptedException {
 		//TODO: check what happens if restarted? Inconsistent states?
 		wipeTask = new PIMWiper(
-				getBaseContext(),
+				this,//getBaseContext(),
 				prefs.getBoolean(ITCConstants.Preference.DEFAULT_WIPE_CONTACTS, false),
 				prefs.getBoolean(ITCConstants.Preference.DEFAULT_WIPE_PHOTOS, false),
 				prefs.getBoolean(ITCConstants.Preference.DEFAULT_WIPE_CALLLOG, false),
@@ -138,7 +168,7 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 				prefs.getBoolean(ITCConstants.Preference.DEFAULT_WIPE_CALENDAR, false),
 				prefs.getBoolean(ITCConstants.Preference.DEFAULT_WIPE_FOLDERS, false));
 		wipeTask.start();
-		broadcastServiceState(SCHEDULESERVICECALLBACK_WIPETASK_STARTED);
+		//broadcastServiceState(SCHEDULESERVICECALLBACK_WIPETASK_STARTED);
 	}
 
 	public void cancelWipeTask(){

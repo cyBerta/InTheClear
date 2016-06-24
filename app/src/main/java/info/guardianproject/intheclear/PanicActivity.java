@@ -209,9 +209,49 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
 
 
 
+    private void updateWipeStateMsg(Bundle b){
+        String msg = "";
+        int category;
+        if (b != null) {
+            int state = b.getInt(PIMWiper.pimWiperState);
+            switch (state) {
+                case PIMWiper.stateOnWipeStarted:
+                    msg = "Wipe started";
+                    break;
+                case PIMWiper.stateOnWipeCancelled:
+                    msg = "Wipe cancelled";
+                    break;
+                case PIMWiper.stateOnWipeCategoryFailed:
+                    Exception e = (Exception) b.getSerializable(PIMWiper.pimWiperException);
+                    msg = "Wipe failed: " + e.getMessage();
+                    break;
+                case PIMWiper.stateOnWipeFinished:
+                    msg = "Wipe finished!!!";
+                    break;
+                case PIMWiper.stateOnWipeCategoryStart:
+                    category = b.getInt(PIMWiper.pimWiperCategory);
+                    msg = "Starting to wipe ";
+                    msg = addCategoryToString(msg, category);
+                    break;
+                case PIMWiper.stateOnWipeCategoryFinished:
+                    category = b.getInt(PIMWiper.pimWiperCategory);
+                    msg = "Finished to wipe ";
+                    msg = addCategoryToString(msg, category);
+                    break;
+                default:
+                    break;
+            }
+            if (!TextUtils.isEmpty(msg)){
+                countdownProgressDialog.updateWipePanicStatus(msg);
+            }
+        }
+    }
     private boolean continueCountdown(){
         boolean isContinuingCountdown = false;
         long lastShout = scheduleClient.getLastShoutTime();
+        Bundle b = scheduleClient.getCurrentWipeState();
+        updateWipeStateMsg(b);
+
         if (lastShout != 0){
             long delta = 58000 - (System.currentTimeMillis() - lastShout);
             Log.d(TAG, "Last Shout  " + delta/1000);
@@ -221,12 +261,37 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
         return isContinuingCountdown;
     }
 
+    private String addCategoryToString(String msg, int category){
+        switch (category){
+            case ITCConstants.Wipe.CALENDAR:
+                msg = msg.concat(" calendar.");
+                break;
+            case ITCConstants.Wipe.CALLLOG:
+                msg = msg.concat(" call log.");
+                break;
+            case ITCConstants.Wipe.CONTACTS:
+                msg = msg.concat(" contacts.");
+                break;
+            case ITCConstants.Wipe.PHOTOS:
+                msg = msg.concat(" photos.");
+                break;
+            case ITCConstants.Wipe.SMS:
+                msg = msg.concat(" sms.");
+                break;
+            case ITCConstants.Wipe.SDCARD:
+                msg =
+                        msg.concat(" sdcard.");
+                break;
+        }
+        return msg;
+    }
+
     /**
      * Callback method of the ScheduleServiceClient
      **/
 
     @Override
-    public void onCallbackReceived(String serviceState, int callback) {
+    public void onCallbackReceived(String serviceState, int callback, Bundle extraData) {
         Log.d(TAG, "onCallbackReceived ServiceState: " + serviceState + " -> " + callback );
 
         if (serviceState.equals(ScheduleService.SERVICE_STATE)){
@@ -261,13 +326,16 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
                 case ScheduleService.SCHEDULESERVICECALLBACK_SERVICE_STOPPED:
                     Log.d(TAG, "Scheduleservise stopped");
                     break;
+                case ScheduleService.SCHEDULESERVICECALLBACK_WIPETASK_STATE_CHANGED:
+                    updateWipeStateMsg(extraData);
+                    break;
                 default:
                     break;
 
             }
         } else if (serviceState.equals(ShoutService.SERVICE_STATE)){
             switch (callback){
-               default:
+                default:
                 case ShoutService.SHOUTSERVICECALLBACK_START:
                     Log.d(TAG, "sendingSMS");
                     countdownProgressDialog.updateSMSPanicStatus("sending SMS...");
@@ -280,8 +348,8 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
 
             }
         }
-
     }
+
 
     /**
      * implementing Activities OnClickListener
@@ -392,4 +460,6 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
             }
         }
     }
+
+
 }

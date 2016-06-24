@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.telephony.SmsManager;
@@ -23,6 +24,8 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 
 	private static final String TAG = ScheduleService.class.getName();
 	public final static String SERVICE_STATE = ScheduleService.class.getName().concat(".STATE");
+	public final static String SERVICE_STATE_EXTRA = ScheduleService.class.getName().concat(".STATE_EXTRA");
+
 	public final static int SCHEDULESERVICECALLBACK_UNKNOWN = -1;
 	public final static int SCHEDULESERVICECALLBACK_ONBIND = 2;
 	public final static int SCHEDULESERVICECALLBACK_ALARMTASK_STOPPED = 3;
@@ -30,6 +33,7 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 	public final static int SCHEDULESERVICECALLBACK_WIPETASK_STARTED = 5;
 	public final static int SCHEDULESERVICECALLBACK_WIPETASK_STOPPED = 6;
 	public final static int SCHEDULESERVICECALLBACK_SERVICE_STOPPED = 7;
+	public final static int SCHEDULESERVICECALLBACK_WIPETASK_STATE_CHANGED = 8;
 
 
 	public final static String STOP_SCHEDULE_SERVICE = "StopService";
@@ -45,34 +49,10 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 		return alarmTask.getLastStartTime();
 	}
 
-	@Override
-	public void onWipeCategoryStart(int category) {
-
-	}
 
 	@Override
-	public void onWipeCategoryFinished(int category) {
-
-	}
-
-	@Override
-	public void onWipeCategoryFailed(int category, Exception e) {
-
-	}
-
-	@Override
-	public void onWipeStarted() {
-		broadcastServiceState(SCHEDULESERVICECALLBACK_WIPETASK_STARTED);
-	}
-
-	@Override
-	public void onWipeCancelled() {
-		broadcastServiceState(SCHEDULESERVICECALLBACK_WIPETASK_STOPPED);
-	}
-
-	@Override
-	public void onWipeFinished() {
-		broadcastServiceState(SCHEDULESERVICECALLBACK_WIPETASK_STOPPED);
+	public void onWipeStateChanged(Bundle wipeState) {
+		broadcastServiceState(SCHEDULESERVICECALLBACK_WIPETASK_STATE_CHANGED, wipeState);
 	}
 
 
@@ -178,6 +158,13 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 		broadcastServiceState(SCHEDULESERVICECALLBACK_WIPETASK_STOPPED);
 	}
 
+	public Bundle getCurrentWipeState(){
+		if (wipeTask != null){
+			return wipeTask.getCurrentState();
+		}
+		return null;
+	}
+
 	public boolean isAlarmTaskRunning() {
 		if (alarmTask != null && alarmTask.isRunning()){
 			return true;
@@ -243,6 +230,17 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 		broadcastIntent.putExtra(SERVICE_STATE, state);
 		Log.d(TAG, "Send Broadcast, ServiceState: " + state + " - Service: " + ScheduleService.class.getName());
 		sendBroadcast(broadcastIntent);
+	}
+
+	private void broadcastServiceState(int state, Bundle data){
+		Log.d(TAG, "ScheduleService broadcastServiceState + " + state);
+		Intent broadcastIntent = new Intent();
+		broadcastIntent.setAction(ScheduleService.class.getName());
+		broadcastIntent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
+		broadcastIntent.putExtra(SERVICE_STATE, state);
+		broadcastIntent.putExtra(SERVICE_STATE_EXTRA, data);
+		sendBroadcast(broadcastIntent);
+
 	}
 
 }

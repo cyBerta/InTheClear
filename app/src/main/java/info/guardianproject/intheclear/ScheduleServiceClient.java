@@ -1,6 +1,7 @@
 package info.guardianproject.intheclear;
 
 import android.content.*;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import info.guardianproject.utils.Logger;
@@ -16,7 +17,7 @@ public class ScheduleServiceClient {
 	private static final String TAG = ScheduleServiceClient.class.getName();
 
 	public interface IScheduleClientCallback{
-		public void onCallbackReceived(String service, int callbackState);
+		public void onCallbackReceived(String service, int callbackState, Bundle extraData);
 	}
 
 	// The hook into our service
@@ -137,6 +138,14 @@ public class ScheduleServiceClient {
 		return isRunning;
 	}
 
+	public Bundle getCurrentWipeState(){
+		Bundle bundle = null;
+		if (mBoundService != null){
+			bundle = mBoundService.getCurrentWipeState();
+		}
+		return bundle;
+	}
+
 	/**
 	 * When you have finished with the service call this method to stop it 
 	 * releasing your connection and resources
@@ -175,11 +184,11 @@ public class ScheduleServiceClient {
 				if (intent.getAction().equals(ScheduleService.class.getName())){
 					Logger.logD(TAG, "ScheduleService callback received : " + Logger.intentToString(intent));
 					int serviceState = intent.getIntExtra(ScheduleService.SERVICE_STATE, ScheduleService.SCHEDULESERVICECALLBACK_UNKNOWN);
-					callbackImplementation.onCallbackReceived(ScheduleService.SERVICE_STATE, serviceState);
+					callbackImplementation.onCallbackReceived(ScheduleService.SERVICE_STATE, serviceState, intent.getBundleExtra(ScheduleService.SERVICE_STATE_EXTRA));
 				} else if (intent.getAction().equals(ShoutService.class.getName())){
 					Logger.logD(TAG, "ShoutService callback received : " + Logger.intentToString(intent));
 					int serviceState = intent.getIntExtra(ShoutService.SERVICE_STATE, ShoutService.SHOUTSERVICECALLBACK_UNKNOWN);
-					callbackImplementation.onCallbackReceived(ShoutService.SERVICE_STATE, serviceState);
+					callbackImplementation.onCallbackReceived(ShoutService.SERVICE_STATE, serviceState, null);
 				}
 			}
 

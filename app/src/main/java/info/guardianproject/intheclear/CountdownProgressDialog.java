@@ -5,12 +5,17 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.CountDownTimer;
-import android.text.Spannable;
+import android.os.Handler;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.*;
 import android.util.Log;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ProgressBar;
+import info.guardianproject.panic.PanicUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
@@ -25,26 +30,38 @@ public class CountdownProgressDialog extends ProgressDialog implements DialogInt
         CountdownProgressDialogInterface {
 
     public static final String TAG = CountdownProgressDialog.class.getName();
-
-    private Queue<Runnable> uiQueue;
-
     private CharSequence extraInfo = "";
-    private CharSequence mSMSProgressMessage;
-    private CharSequence mWipeProgressMessage;
+    private CharSequence mSMSProgressMessage = "";
+    private CharSequence mWipeProgressMessage = "";
     private AtomicBoolean uiReady = new AtomicBoolean(false);
     private CustomCountdownTimer countDownTimer;
     private boolean mShowMessage;
-
+    private Drawable animationDrawable;
+    private TimedQueueHandler timedQueue;
+    private Handler uiHandler;
     private ArrayList<WeakReference<CountdownProgressDialogInterface.OnCountdownFinishedListener>> finishCallbackListener;
+    private boolean firstShout = false;
+    private  ProgressBar animatedProgressBar;
+    private Thread timedQueueThread;
 
     public CountdownProgressDialog(Context context) {
         super(context);
+
+
         finishCallbackListener = new ArrayList<>();
+        animationDrawable = PanicUtils.getDrawable(context,R.drawable.panic);
+        timedQueue = new TimedQueueHandler();
+        uiHandler = new Handler();
+
     }
+
 
     public CountdownProgressDialog(Context context, int theme) {
         super(context, theme);
         finishCallbackListener = new ArrayList<>();
+        animationDrawable  = PanicUtils.getDrawable(context, R.drawable.panic);
+        timedQueue = new TimedQueueHandler();
+
     }
 
     public void registerDialogCallbackReceiver(CountdownProgressDialogInterface.OnCountdownFinishedListener listenerImpl){
@@ -52,7 +69,7 @@ public class CountdownProgressDialog extends ProgressDialog implements DialogInt
         finishCallbackListener.add(reference);
     }
 
-    private void notifyProgressFinishedListeners(boolean firstShout){
+    private void notifyProgressFinishedListeners(){
         Iterator<WeakReference<OnCountdownFinishedListener>> i = finishCallbackListener.iterator();
         while (i.hasNext()) {
             WeakReference<CountdownProgressDialogInterface.OnCountdownFinishedListener> reference = i.next();
@@ -89,19 +106,6 @@ public class CountdownProgressDialog extends ProgressDialog implements DialogInt
         }
 
 
-
-       /* CharSequence t1 = getText(R.string.xxx1);
-        SpannableString s1 = new SpannableString(t1);
-        s1.setSpan(new BulletSpan(15), 0, t1.length(), 0);
-        CharSequence t2 = getText(R.string.xxx2);
-        SpannableString s2 = new SpannableString(t2);
-        s2.setSpan(new BulletSpan(15), 0, t2.length(), 0);
-        textView.setText(TextUtils.concat(s1, s2));*/
-
-
-
-        //CharSequence progressMessages = TextUtils.concat( spanStringExtra, spanSMSMsg, spanWipeMsg);
-
         CountdownProgressDialog.this.setMessage(progressMessages);
         mShowMessage = true;
         if (uiReady.get()){
@@ -122,9 +126,11 @@ public class CountdownProgressDialog extends ProgressDialog implements DialogInt
     }
 
     public void updateWipePanicStatus(String wipeMsg){
-        mWipeProgressMessage = (!TextUtils.isEmpty(wipeMsg) ? wipeMsg : "");
-        showPanicStatus(extraInfo, mSMSProgressMessage, mWipeProgressMessage);
+       timedQueue.push(wipeMsg);
     }
+
+
+
     public void updatePanicStatusExtra(String extraMsg){
         extraInfo = (!TextUtils.isEmpty(extraMsg) ? extraMsg : "");
         showPanicStatus(extraInfo, mSMSProgressMessage, mWipeProgressMessage);
@@ -135,18 +141,25 @@ public class CountdownProgressDialog extends ProgressDialog implements DialogInt
     }
 
     public void startCountdown(boolean firstShout){
+        this.firstShout = firstShout;
         int duration = 58000;
         if (firstShout) {
             duration = 10000;
         }
-
+        timedQueue.start();
+        timedQueueThread = new Thread(timedQueue);
+        timedQueueThread.start();
         countDownTimer = new CustomCountdownTimer(duration, ITCConstants.Duration.COUNTDOWNINTERVAL);
-        countDownTimer.startCountdownTimer(firstShout);
+        countDownTimer.startCountdownTimer();
     }
 
     public void continueCountdown(long duration){
+        firstShout = false;
+        timedQueue.start();
+        timedQueueThread = new Thread(timedQueue);
+        timedQueueThread.start();
         countDownTimer = new CustomCountdownTimer(duration, ITCConstants.Duration.COUNTDOWNINTERVAL);
-        countDownTimer.startCountdownTimer(false);
+        countDownTimer.startCountdownTimer();
     }
 
 
@@ -181,6 +194,7 @@ public class CountdownProgressDialog extends ProgressDialog implements DialogInt
         if (mShowMessage){
             this.show();
         }
+
     }
 
 
@@ -189,10 +203,47 @@ public class CountdownProgressDialog extends ProgressDialog implements DialogInt
         this.dismiss();
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        animatedProgressBar = (ProgressBar) findViewById(android.R.id.progress);
+        if (firstShout){
+            animatedProgressBar.setIndeterminateDrawable(animationDrawable);
+            Animation animation = AnimationUtils.loadAnimation(CountdownProgressDialog.this.getContext(), R.anim.animation_fade_in_out);
+            animatedProgressBar.startAnimation(animation);
+            CountdownProgressDialog.this.setCancelable(false);
+            CountdownProgressDialog.this.setIndeterminate(true);
+        } else {
+            animatedProgressBar.clearAnimation();
+            animatedProgressBar.setIndeterminateDrawable(animationDrawable);
+            animatedProgressBar.invalidateDrawable(animationDrawable);
+            CountdownProgressDialog.this.setCancelable(true);
+            CountdownProgressDialog.this.setIndeterminate(false);
+            //  CountdownProgressDialog.this.invalidateProgressBar();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        animatedProgressBar.setIndeterminateDrawable(null);
+        animatedProgressBar.clearAnimation();
+        animatedProgressBar = null;
+        timedQueue.stop();
+        super.onStop();
+    }
+
+    @Override
+    public void show() {
+        super.show();
+        if (!firstShout){
+            animatedProgressBar.clearAnimation();
+        }
+    }
+
 
     protected class CustomCountdownTimer extends CountDownTimer {
 
-        private boolean firstShout = false;
         private boolean isRunning = false;
         private Context activityContext;
 
@@ -246,25 +297,64 @@ public class CountdownProgressDialog extends ProgressDialog implements DialogInt
         @Override
         public void onFinish() {
             mSMSProgressMessage = "";
-            notifyProgressFinishedListeners(firstShout);
+            notifyProgressFinishedListeners();
+            if (firstShout) firstShout = false;
             isRunning = false;
         }
 
-        public synchronized final CountDownTimer startCountdownTimer(boolean firstShout){
-            if (firstShout) {
-                this.firstShout = firstShout;
-                CountdownProgressDialog.this.setCancelable(false);
-            } else {
-                CountdownProgressDialog.this.setCancelable(true);
-            }
+        public synchronized final CountDownTimer startCountdownTimer(){
+
+
+
             return start();
         }
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
+    private class TimedQueueHandler implements Runnable {
+        private LinkedList<String> queue;
+        private boolean running = true;
+        public TimedQueueHandler(){
+            queue = new LinkedList<>();
+        }
 
+        @Override
+        public void run() {
+            while (running){
+                try {
+                    Thread.sleep(750);
+                    poll();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        public synchronized void push(String msg){
+            queue.add(msg);
+        }
+
+        public synchronized void poll(){
+            String wipeMsg = queue.poll();
+            if (!TextUtils.isEmpty(wipeMsg)){
+                mWipeProgressMessage = wipeMsg;
+            }
+          //  mWipeProgressMessage = (!TextUtils.isEmpty(wipeMsg) ? wipeMsg : "");
+            uiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    showPanicStatus(extraInfo, mSMSProgressMessage, mWipeProgressMessage);
+                }
+            });
+        }
+
+        public void stop(){
+            running = false;
+        }
+
+        public void start(){
+            running = true;
+        }
+
+    }
 
 }

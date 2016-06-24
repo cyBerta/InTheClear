@@ -13,11 +13,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.RemoteException;
 import android.provider.CallLog;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.Data;
 import android.provider.MediaStore;
+import android.support.v4.app.BundleCompat;
 import android.util.Log;
 
 import info.guardianproject.intheclear.R;
@@ -36,18 +38,27 @@ import java.util.ArrayList;
 public class PIMWiper extends Thread {
 
     public interface PIMWiperCallback{
-        void onWipeCategoryStart(int category);
-        void onWipeCategoryFinished(int category);
-        void onWipeCategoryFailed(int category, Exception e);
-        void onWipeStarted();
-        void onWipeCancelled();
-        void onWipeFinished();
+        void onWipeStateChanged(Bundle wipeState);
     }
 
     private static ContentResolver cr;
     private static AccountManager am;
     private static Context c;
     private static boolean isRunning = false;
+
+    public static final String pimWiperState = PIMWiper.class.getName().concat(".STATE");
+    public static final String pimWiperCategory = PIMWiper.class.getName().concat(".CATEGORY");
+    public static final String pimWiperException = PIMWiper.class.getName().concat(".EXCEPTION");
+
+
+    public static final int stateOnWipeCategoryStart = 0;
+    public static final int stateOnWipeCategoryFinished = 1;
+    public static final int stateOnWipeCategoryFailed = 2;
+    public static final int stateOnWipeStarted = 3;
+    public static final int stateOnWipeCancelled = 4;
+    public static final int stateOnWipeFinished = 5;
+
+    private Bundle currentState;
 
     PIMWiperCallback pimWiperCallback;
 
@@ -80,6 +91,7 @@ public class PIMWiper extends Thread {
             pimWiperCallback = (PIMWiperCallback) c;
         }
 
+        currentState = new Bundle();
 
     }
 
@@ -87,6 +99,10 @@ public class PIMWiper extends Thread {
     public void run() {
         try {
             isRunning = true;
+            if (!contacts && !photos && !callLog && !sms && !calendar && !sdcard){
+                onWipeCancelled();
+                return;
+            }
             onWipeStarted();
             // FIRST, you must turn off sync or else you get the
             // "Deleted Contacts" error...
@@ -143,7 +159,7 @@ public class PIMWiper extends Thread {
 
         } catch (IOException e) {
             Log.d(ITCConstants.Log.ITC, "Wipe has failed: " + e);
-            onWipeCategoryFailed(0, e);
+            onWipeCategoryFailed(e);
         } catch (PIMWiperStoppedException e){
             onWipeCancelled();
             Log.d(ITCConstants.Log.ITC, "PIMWiper Stopped!");
@@ -151,37 +167,79 @@ public class PIMWiper extends Thread {
     }
 
     private void onWipeCategoryStart(int category){
-        if (pimWiperCallback != null){
-            pimWiperCallback.onWipeCategoryStart(category);
+        synchronized (currentState){
+            currentState.clear();
+            currentState.putInt(pimWiperState, stateOnWipeCategoryStart);
+            currentState.putInt(pimWiperCategory, category);
+            if (pimWiperCallback != null){
+                pimWiperCallback.onWipeStateChanged(currentState);
+            }
         }
     }
 
     void onWipeCategoryFinished(int category){
-        if (pimWiperCallback != null){
-            pimWiperCallback.onWipeCategoryFinished(category);
+        synchronized (currentState){
+            currentState.clear();
+            currentState.putInt(pimWiperState, stateOnWipeCategoryFinished);
+            currentState.putInt(pimWiperCategory, category);
+            if (pimWiperCallback != null){
+                pimWiperCallback.onWipeStateChanged(currentState);
+            }
         }
     }
 
-    void onWipeCategoryFailed(int category, Exception e){
-        if (pimWiperCallback != null){
-            pimWiperCallback.onWipeCategoryFailed(category, e);
+    void onWipeCategoryFailed(Exception e){
+        int lastState = 0;
+        synchronized (currentState){
+            lastState = currentState.getInt(pimWiperState);
+            currentState.clear();
+            currentState.putInt(pimWiperState, stateOnWipeCategoryFailed);
+            currentState.putInt(pimWiperCategory, lastState);
+            currentState.putSerializable(pimWiperException, e);
+            if (pimWiperCallback != null){
+                pimWiperCallback.onWipeStateChanged(currentState);
+            }
         }
+
     }
 
     void onWipeStarted(){
-        if (pimWiperCallback != null){
-            pimWiperCallback.onWipeStarted();
-        }
+       synchronized (currentState){
+            currentState.clear();
+            currentState.putInt(pimWiperState, stateOnWipeStarted);
+           if (pimWiperCallback != null){
+               pimWiperCallback.onWipeStateChanged(currentState);
+           }
+       }
     }
 
     void onWipeCancelled(){
-        if (pimWiperCallback != null){
-            pimWiperCallback.onWipeCancelled();
+
+        synchronized (currentState){
+            currentState.clear();
+            currentState.putInt(pimWiperState, stateOnWipeCancelled);
+            if (pimWiperCallback != null){
+                pimWiperCallback.onWipeStateChanged(currentState);
+            }
         }
     }
+
     void onWipeFinished(){
-        if (pimWiperCallback != null){
-            pimWiperCallback.onWipeFinished();
+
+        synchronized (currentState){
+            currentState.clear();
+            currentState.putInt(pimWiperState, stateOnWipeFinished);
+            if (pimWiperCallback != null){
+                pimWiperCallback.onWipeStateChanged(currentState);
+            }
+        }
+
+
+    }
+
+    public Bundle getCurrentState(){
+        synchronized (currentState){
+            return currentState;
         }
     }
 

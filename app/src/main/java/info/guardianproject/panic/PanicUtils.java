@@ -4,6 +4,7 @@ package info.guardianproject.panic;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.provider.Telephony;
 import android.text.TextUtils;
@@ -38,6 +39,19 @@ public class PanicUtils {
             return c.getPackageName().equals(Telephony.Sms.getDefaultSmsPackage(c));
     }
 
+    @TargetApi(21)
+    private static final Drawable getDrawableNew(Context context, int id){
+        return context.getDrawable(id);
+    }
+
+    public static final Drawable getDrawable(Context context, int id) {
+        final int version = Build.VERSION.SDK_INT;
+        if (version >= 21) {
+           return getDrawableNew(context, id);
+        } else {
+            return context.getResources().getDrawable(id);
+        }
+    }
 
 
 }

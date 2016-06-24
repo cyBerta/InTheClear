@@ -30,8 +30,6 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 	public final static int SCHEDULESERVICECALLBACK_ONBIND = 2;
 	public final static int SCHEDULESERVICECALLBACK_ALARMTASK_STOPPED = 3;
 	public final static int SCHEDULESERVICECALLBACK_ALARMTASK_STARTED = 4;
-	public final static int SCHEDULESERVICECALLBACK_WIPETASK_STARTED = 5;
-	public final static int SCHEDULESERVICECALLBACK_WIPETASK_STOPPED = 6;
 	public final static int SCHEDULESERVICECALLBACK_SERVICE_STOPPED = 7;
 	public final static int SCHEDULESERVICECALLBACK_WIPETASK_STATE_CHANGED = 8;
 
@@ -148,14 +146,12 @@ public class ScheduleService extends Service implements SMSSender.SMSConfirmInte
 				prefs.getBoolean(ITCConstants.Preference.DEFAULT_WIPE_CALENDAR, false),
 				prefs.getBoolean(ITCConstants.Preference.DEFAULT_WIPE_FOLDERS, false));
 		wipeTask.start();
-		//broadcastServiceState(SCHEDULESERVICECALLBACK_WIPETASK_STARTED);
 	}
 
 	public void cancelWipeTask(){
 		if (wipeTask != null){
 			wipeTask.stopPIMWiper();
 		}
-		broadcastServiceState(SCHEDULESERVICECALLBACK_WIPETASK_STOPPED);
 	}
 
 	public Bundle getCurrentWipeState(){

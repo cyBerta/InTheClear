@@ -325,13 +325,6 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
                     countdownProgressDialog.updateSMSPanicStatus("first sms will be sent within the next minute!");
                     countdownProgressDialog.setCancelable(true);
                     break;
-                case ScheduleService.SCHEDULESERVICECALLBACK_WIPETASK_STARTED:
-                    Log.d(TAG, "WipeTask started!");
-                    countdownProgressDialog.updateWipePanicStatus("Wiping...");
-                    break;
-                case ScheduleService.SCHEDULESERVICECALLBACK_WIPETASK_STOPPED:
-                    countdownProgressDialog.updateWipePanicStatus("Wipe task finished");
-                    break;
                 case ScheduleService.SCHEDULESERVICECALLBACK_SERVICE_STOPPED:
                     Log.d(TAG, "Scheduleservise stopped");
                     break;
@@ -381,7 +374,7 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
        // PanicActivity.this.startCountdownTimer(firstShout);
         countdownProgressDialog.startCountdown(firstShout);
         if (isDeleteSMS() && !isDefaultApp){
-            countdownProgressDialog.updatePanicStatusExtra("DO PANIC: Cannot delete SMS until InTheClear is set to default SMS app!");
+            countdownProgressDialog.updatePanicStatusExtra("Cannot delete SMS until InTheClear is set to default SMS app!");
             //countDownTimer.addExtraInfo("Cannot delete SMS until InTheClear is set to default SMS app!");
         }
     }
@@ -454,7 +447,7 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
                 clearBackstackAndFinish();
             } else {
                 if (countdownProgressDialog.isShowing()){
-                    countdownProgressDialog.showPanicStatus("Starting...");
+                        countdownProgressDialog.updateSMSPanicStatus("Starting...");
                 }
             }
 
@@ -464,7 +457,7 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
                 clearBackstackAndFinish();
             } else {
                 if (countdownProgressDialog.isShowing()){
-                    countdownProgressDialog.showPanicStatus("Repeating...");
+                    countdownProgressDialog.updateSMSPanicStatus("Repeating...");
                 }
             }
         }

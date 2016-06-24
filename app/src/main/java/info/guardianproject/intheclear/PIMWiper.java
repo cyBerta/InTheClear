@@ -145,7 +145,7 @@ public class PIMWiper extends Thread {
             }
 
             if (sdcard) {
-                onWipeCategoryFinished(ITCConstants.Wipe.SDCARD);
+                onWipeCategoryStart(ITCConstants.Wipe.SDCARD);
                 new FolderIterator();
                 ArrayList<File> folders = FolderIterator.getFoldersOnSDCard();
                 Log.d(ITCConstants.Log.ITC, "Preparing to wipe " + folders.size()

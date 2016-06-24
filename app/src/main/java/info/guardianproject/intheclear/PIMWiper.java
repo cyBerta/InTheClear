@@ -57,6 +57,7 @@ public class PIMWiper extends Thread {
     public static final int stateOnWipeStarted = 3;
     public static final int stateOnWipeCancelled = 4;
     public static final int stateOnWipeFinished = 5;
+    public static final int stateOnWipeFailed = 6;
 
     private Bundle currentState;
 
@@ -100,7 +101,7 @@ public class PIMWiper extends Thread {
         try {
             isRunning = true;
             if (!contacts && !photos && !callLog && !sms && !calendar && !sdcard){
-                onWipeCancelled();
+                onWipeFailed(new PIMWiperNothingToWipeException());
                 return;
             }
             onWipeStarted();
@@ -213,6 +214,17 @@ public class PIMWiper extends Thread {
        }
     }
 
+
+    void onWipeFailed(Exception e) {
+        synchronized (currentState){
+            currentState.clear();
+            currentState.putInt(pimWiperState, stateOnWipeFailed);
+            currentState.putSerializable(pimWiperException, e);
+            if (pimWiperCallback != null){
+                pimWiperCallback.onWipeStateChanged(currentState);
+            }
+        }
+    }
     void onWipeCancelled(){
 
         synchronized (currentState){
@@ -605,6 +617,13 @@ public class PIMWiper extends Thread {
             super();
         }
 
+    }
+
+
+    public static class PIMWiperNothingToWipeException extends RuntimeException {
+        public PIMWiperNothingToWipeException() {
+            super();
+        }
     }
 
 }

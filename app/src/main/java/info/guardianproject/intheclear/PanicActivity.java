@@ -23,6 +23,7 @@ import info.guardianproject.utils.EndActivity;
 import info.guardianproject.utils.Logger;
 import info.guardianproject.views.PanicItem;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -238,6 +239,14 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
                     msg = "Finished to wipe ";
                     msg = addCategoryToString(msg, category);
                     break;
+
+                case PIMWiper.stateOnWipeFailed:
+                    Serializable exception = b.getSerializable(PIMWiper.pimWiperException);
+                    if (exception instanceof PIMWiper.PIMWiperNothingToWipeException){
+                        msg = "Nothing selected to wipe!";
+                    }
+                    break;
+
                 default:
                     break;
             }

@@ -109,4 +109,24 @@
     <string name="configure">Configure</string>
     <string name="add_widget">Add widget</string>
 
+    <string name="MSG_WIPE_STARTED">Wipe started</string>
+    <string name="MSG_WIPE_CANCELED">Wipe canceled</string>
+    <string name="MSG_WIPE_CATEGORY_FAILED">Wipe failed: %s</string>
+    <string name="MSG_WIPE_FIMISHED">Wipe finished</string>
+    <string name="MSG_WIPE_CATEGORY_STARTED">Starting to wipe %s</string>
+    <string name="MSG_WIPE_CATEGORY_FINISHED">Finished to wipe %s</string>
+    <string name="MSG_WIPE_EXCEPTION_NOTHING_TO_WIPE">Nothing selected to wipe!</string>
+    <string name="MSG_WIPE_ERROR_NO_SMS_DEFAULT">Cannot delete SMS until InTheClear is set to default SMS app!</string>
+    
+    <string name="CATEGORY_CALENDAR">calendar</string>
+    <string name="CATEGORY_CALL_LOG">call log</string>
+    <string name="CATEGORY_CONTACTS">contacts</string>
+    <string name="CATEGORY_PHOTOS">photos</string>
+    <string name="CATEGORY_SMS">sms</string>
+    <string name="CATEGORY_SDCARD">sd card</string>
+
+    <string name="MSG_SHOUT_FIRST_MINUTE">First sms will be sent within the next minute!</string>
+    <string name="MSG_SHOUT_SENDING_SMS">Sending SMS…</string>
+    <string name="MSG_SHOUT_REPEATING">"Repeating…</string>
+
 </resources>

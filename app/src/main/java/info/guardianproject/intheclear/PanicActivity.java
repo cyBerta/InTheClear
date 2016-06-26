@@ -58,7 +58,6 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
 
         panicControl = (Button) findViewById(R.id.panicControl);
         shoutReadout = (TextView) findViewById(R.id.shoutReadout);
-//        listView = (ListView) findViewById(R.id.wipeItems);
 
         // if this is not a cell phone, then no need to show the panic message
         if (TextUtils.isEmpty(PhoneInfo.getIMEI())) {
@@ -120,7 +119,6 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        //Log.d(TAG, "onActivity Result from Telephony");
         Logger.logD(TAG, "onActivityResult: " + Logger.intentToString(data) );
 
         switch (requestCode) {
@@ -129,14 +127,15 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
 
                     if (isDeleteSMS() && !PanicUtils.isDefaultSMSApp(this.getApplicationContext())){
                         if (scheduleClient.isSMSPanicRunning()) {
-                            countdownProgressDialog.updatePanicStatusExtra("Cannot delete SMS until InTheClear is set to default SMS app!");
+                            countdownProgressDialog.updatePanicStatusExtra(getString(R.string.MSG_WIPE_ERROR_NO_SMS_DEFAULT));
+
                         }
                     } else {
                         //
                         /*Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && resultCode == Activity.RESULT_OK && PanicUtils.isDefaultSMSApp(this.getApplicationContext())) {*/
                         if (scheduleClient.isSMSPanicRunning()) {
                             if (!continueCountdown()) {
-                                countdownProgressDialog.updateSMSPanicStatus("first sms will be sent within the next minute!");
+                                countdownProgressDialog.updateSMSPanicStatus(getString(R.string.MSG_SHOUT_FIRST_MINUTE));
                             }
                         } else {
                             countdownProgressDialog.startCountdown(true);
@@ -217,33 +216,33 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
             int state = b.getInt(PIMWiper.pimWiperState);
             switch (state) {
                 case PIMWiper.stateOnWipeStarted:
-                    msg = "Wipe started";
+                    msg = getString(R.string.MSG_WIPE_STARTED);
                     break;
                 case PIMWiper.stateOnWipeCancelled:
-                    msg = "Wipe cancelled";
+                    msg =  getString(R.string.MSG_WIPE_CANCELED);
                     break;
                 case PIMWiper.stateOnWipeCategoryFailed:
                     Exception e = (Exception) b.getSerializable(PIMWiper.pimWiperException);
-                    msg = "Wipe failed: " + e.getMessage();
+                    msg = String.format(getString(R.string.MSG_WIPE_CATEGORY_FAILED), e.getMessage());
                     break;
                 case PIMWiper.stateOnWipeFinished:
-                    msg = "Wipe finished!!!";
+                    msg = getString(R.string.MSG_WIPE_FIMISHED);
                     break;
                 case PIMWiper.stateOnWipeCategoryStart:
                     category = b.getInt(PIMWiper.pimWiperCategory);
-                    msg = "Starting to wipe ";
+                    msg = getString(R.string.MSG_WIPE_CATEGORY_STARTED);
                     msg = addCategoryToString(msg, category);
                     break;
                 case PIMWiper.stateOnWipeCategoryFinished:
                     category = b.getInt(PIMWiper.pimWiperCategory);
-                    msg = "Finished to wipe ";
+                    msg = getString(R.string.MSG_WIPE_CATEGORY_FINISHED);
                     msg = addCategoryToString(msg, category);
                     break;
 
                 case PIMWiper.stateOnWipeFailed:
                     Serializable exception = b.getSerializable(PIMWiper.pimWiperException);
                     if (exception instanceof PIMWiper.PIMWiperNothingToWipeException){
-                        msg = "Nothing selected to wipe!";
+                        msg = getString(R.string.MSG_WIPE_EXCEPTION_NOTHING_TO_WIPE);
                     }
                     break;
 
@@ -273,23 +272,22 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
     private String addCategoryToString(String msg, int category){
         switch (category){
             case ITCConstants.Wipe.CALENDAR:
-                msg = msg.concat(" calendar.");
+                msg = String.format(msg.concat(" "), getString(R.string.CATEGORY_CALENDAR));
                 break;
             case ITCConstants.Wipe.CALLLOG:
-                msg = msg.concat(" call log.");
+                msg = String.format(msg.concat(" "), getString(R.string.CATEGORY_CALL_LOG));
                 break;
             case ITCConstants.Wipe.CONTACTS:
-                msg = msg.concat(" contacts.");
+                msg = String.format(msg.concat(" "), (getString(R.string.CATEGORY_CONTACTS)));
                 break;
             case ITCConstants.Wipe.PHOTOS:
-                msg = msg.concat(" photos.");
+                msg = String.format(msg.concat(" "), getString(R.string.CATEGORY_PHOTOS));
                 break;
             case ITCConstants.Wipe.SMS:
-                msg = msg.concat(" sms.");
+                msg = String.format(msg.concat(" "), getString(R.string.CATEGORY_SMS));
                 break;
             case ITCConstants.Wipe.SDCARD:
-                msg =
-                        msg.concat(" sdcard.");
+                msg = String.format(msg.concat(" "), getString(R.string.CATEGORY_SDCARD));
                 break;
         }
         return msg;
@@ -307,9 +305,9 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
             switch (callback){
                 case ScheduleService.SCHEDULESERVICECALLBACK_ONBIND:
                     if (scheduleClient.isSMSPanicRunning() || scheduleClient.isWipePanicRunning()){
-                        //if (uiReady.get() && !continueCountdown()){
                         if (!continueCountdown()){
-                            countdownProgressDialog.updateSMSPanicStatus("first sms will be sent within the next minute!");
+                            countdownProgressDialog.updateSMSPanicStatus(getString(R.string.MSG_SHOUT_FIRST_MINUTE));
+
                         }
                     } else {
                         if (oneTouchPanic){
@@ -322,11 +320,11 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
                     countdownProgressDialog.cancel();
                     break;
                 case ScheduleService.SCHEDULESERVICECALLBACK_ALARMTASK_STARTED:
-                    countdownProgressDialog.updateSMSPanicStatus("first sms will be sent within the next minute!");
+                    countdownProgressDialog.updateSMSPanicStatus(getString(R.string.MSG_SHOUT_FIRST_MINUTE));
                     countdownProgressDialog.setCancelable(true);
                     break;
                 case ScheduleService.SCHEDULESERVICECALLBACK_SERVICE_STOPPED:
-                    Log.d(TAG, "Scheduleservise stopped");
+                    Log.d(TAG, "ScheduleService stopped");
                     break;
                 case ScheduleService.SCHEDULESERVICECALLBACK_WIPETASK_STATE_CHANGED:
                     updateWipeStateMsg(extraData);
@@ -340,7 +338,7 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
                 default:
                 case ShoutService.SHOUTSERVICECALLBACK_START:
                     Log.d(TAG, "sendingSMS");
-                    countdownProgressDialog.updateSMSPanicStatus("sending SMS...");
+                    countdownProgressDialog.updateSMSPanicStatus(getString(R.string.MSG_SHOUT_SENDING_SMS));
 
                     break;
                 case ShoutService.SHOUTSERVICECALLBACK_STOP:
@@ -371,11 +369,10 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
     public void doPanic(boolean firstShout){
         Log.d(TAG, "doPanic - fistShout: " + firstShout);
         boolean isDefaultApp = PanicUtils.isDefaultSMSApp(this.getApplicationContext());
-       // PanicActivity.this.startCountdownTimer(firstShout);
         countdownProgressDialog.startCountdown(firstShout);
         if (isDeleteSMS() && !isDefaultApp){
-            countdownProgressDialog.updatePanicStatusExtra("Cannot delete SMS until InTheClear is set to default SMS app!");
-            //countDownTimer.addExtraInfo("Cannot delete SMS until InTheClear is set to default SMS app!");
+            countdownProgressDialog.updatePanicStatusExtra(getString(R.string.MSG_WIPE_ERROR_NO_SMS_DEFAULT));
+
         }
     }
 
@@ -388,7 +385,6 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
 
         intent.putExtra(Telephony.Sms.Intents.EXTRA_PACKAGE_NAME,
                 getPackageName());
-        //intent.putExtra("FIRST_SHOUT", firstShout);
 
         startActivityForResult(intent, ITCConstants.Results.RETURN_FROM_DEFAULT_SMS_REQUEST);
     }
@@ -445,19 +441,15 @@ public class PanicActivity extends Activity implements View.OnClickListener, Sch
             }
             if (stealthMode){
                 clearBackstackAndFinish();
-            } else {
-                if (countdownProgressDialog.isShowing()){
-                        countdownProgressDialog.updateSMSPanicStatus("Starting...");
-                }
             }
-
         } else {
             Log.d(TAG, "not firstShout");
             if (stealthMode) {
                 clearBackstackAndFinish();
             } else {
                 if (countdownProgressDialog.isShowing()){
-                    countdownProgressDialog.updateSMSPanicStatus("Repeating...");
+                    countdownProgressDialog.updateSMSPanicStatus(getString(R.string.MSG_SHOUT_REPEATING));
+
                 }
             }
         }

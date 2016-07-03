@@ -199,7 +199,9 @@
                 </intent-filter>
             </activity>
         -->
-        <activity android:name=".WizardActivity3"
+        <activity android:name=".SetupWizardActivity"
+            android:configChanges="orientation"
+            android:screenOrientation = "portrait"
             android:theme="@style/Theme.AppCompat.Light"
             ></activity>
     </application>

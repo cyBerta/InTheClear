@@ -85,7 +85,7 @@ public class InTheClearActivity extends Activity implements OnClickListener {
     }
 
     private void launchWizard() {
-        Intent i = new Intent(this, WizardActivity3.class);
+        Intent i = new Intent(this, SetupWizardActivity.class);
         startActivity(i);
     }
 

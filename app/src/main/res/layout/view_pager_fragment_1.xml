@@ -5,18 +5,91 @@
 
 
         <!-- fragment_screen_slide_page.xml -->
-        <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-            android:id="@+id/content"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-
-            <TextView style="?android:textAppearanceMedium"
-                android:id="@+id/wizard_explanation"
-                android:padding="16dp"
-                android:lineSpacingMultiplier="1.2"
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/content"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                />
-        </ScrollView>
+                android:layout_height="match_parent" >
+
+        <LinearLayout android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="vertical"
+        >
+            <TextView style="?android:textAppearanceSmall"
+                      android:id="@+id/wizard_explanation"
+                      android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:text="Blabla"
+            />
+            <LinearLayout android:layout_width="match_parent"
+                          android:layout_height="match_parent"
+                          android:orientation="vertical"
+                          android:weightSum="1.0"
+            >
+                <RelativeLayout android:layout_width="match_parent"
+                                android:layout_height="0dip"
+                                android:layout_weight="0.6"
+                                android:baselineAligned="true"
+                                android:paddingTop="2dp"
+                                android:paddingBottom="8dp"
+                >
+                    <TextView
+                            android:id="@+id/text1"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Please enter the alarm message"
+                    />
+                    <EditText android:layout_width="match_parent"
+                              android:layout_height="wrap_content"
+                              android:minLines="2"
+                              android:layout_below="@id/text1"
+                              android:layout_alignParentBottom="true"
+                    />
+                </RelativeLayout>
+
+                <RelativeLayout android:layout_width="match_parent"
+                                android:layout_height="0dip"
+                                android:layout_weight="0.2"
+                                android:paddingBottom="2dp"
+                >
+
+                    <TextView
+                            android:id="@+id/text2"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Your phone number"
+                    />
+                    <EditText android:layout_width="match_parent"
+                              android:layout_height="match_parent"
+                              android:layout_below="@id/text2"
+                              android:layout_alignParentBottom="true"
+                    />
+
+
+                    />
+                </RelativeLayout>
+                <LinearLayout android:layout_width="wrap_content"
+                              android:layout_height="0dip"
+                              android:layout_weight="0.1"
+                              android:layout_gravity="end"
+                              android:paddingRight="15dp"
+                              android:paddingLeft="15dp"
+                >
+                    <Button android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_weight="0.05"
+                            android:text="SEND TEST SMS">
+
+                    </Button>
+                </LinearLayout>
+
+
+
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+
 
 </LinearLayout>

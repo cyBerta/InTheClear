@@ -11,7 +11,6 @@
 
         <TextView style="?android:textAppearanceMedium"
             android:id="@+id/wizard_explanation"
-            android:padding="16dp"
             android:lineSpacingMultiplier="1.2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

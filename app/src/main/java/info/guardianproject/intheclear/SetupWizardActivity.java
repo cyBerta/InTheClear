@@ -51,7 +51,7 @@ public class SetupWizardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.setup_wizard);
         //initiiert die HeaderLeiste (gruener Punkt...)
-        wizardStatusTrack = (LinearLayout) findViewById(R.id.wizard_header);
+        wizardStatusTrack = (LinearLayout) findViewById(R.id.wizard_page_indicator);
         //Title fuer den Header
         titles = getResources().getStringArray(R.array.WIZARD_TITLES);
         wizardTitle = (TextView) findViewById(R.id.wizard_title);
@@ -172,7 +172,7 @@ public class SetupWizardActivity extends AppCompatActivity {
                 case 0:
                     return new ViewPagerFragment0();
                 case 1:
-                    return new ViewPagerFragment0();
+                    return new ViewPagerFragment1();
                 case 2:
                     return new ViewPagerFragment0();
                 case 3:

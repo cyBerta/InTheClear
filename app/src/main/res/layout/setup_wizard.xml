@@ -11,7 +11,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".SetupWizardActivity"
     android:orientation="vertical"
-              android:background="#ffffff"
               android:weightSum="1.0">
 
     <LinearLayout

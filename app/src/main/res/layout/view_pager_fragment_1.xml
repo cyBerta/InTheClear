@@ -14,10 +14,10 @@
                       android:layout_height="wrap_content"
                       android:orientation="vertical"
         >
-            <TextView style="?android:textAppearanceSmall"
-                      android:id="@+id/wizard_explanation"
+            <TextView android:id="@+id/wizard_explanation"
                       android:layout_width="match_parent"
                       android:layout_height="wrap_content"
+                      android:lineSpacingMultiplier="1.2"
                       android:text="Blabla"
             />
             <LinearLayout android:layout_width="match_parent"

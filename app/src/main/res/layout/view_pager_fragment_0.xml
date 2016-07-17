@@ -9,7 +9,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
 
-        <TextView style="?android:textAppearanceMedium"
+        <TextView
+                android:textSize="18sp"
             android:id="@+id/wizard_explanation"
             android:lineSpacingMultiplier="1.2"
             android:layout_width="match_parent"

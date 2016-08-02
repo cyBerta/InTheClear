@@ -202,6 +202,7 @@
             </activity>
         -->
         <activity android:name=".SetupWizardActivity"
+            android:windowSoftInputMode="adjustPan"
             android:configChanges="orientation"
             android:screenOrientation = "portrait"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar.White"

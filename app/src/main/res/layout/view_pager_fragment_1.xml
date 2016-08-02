@@ -32,6 +32,7 @@
                                 android:paddingTop="2dp"
                                 android:paddingBottom="8dp"
                 >
+                    <!--TODO: edit id/text1 and delete hard coded text in all languages! ;) -->
                     <TextView
                             android:id="@+id/text1"
                             android:layout_width="match_parent"
@@ -40,7 +41,6 @@
                     />
                     <EditText android:layout_width="match_parent"
                               android:layout_height="wrap_content"
-                              android:minLines="2"
                               android:layout_below="@id/text1"
                               android:layout_alignParentBottom="true"
                     />
@@ -81,12 +81,7 @@
 
                     </Button>
                 </LinearLayout>
-
-
-
-
             </LinearLayout>
-
         </LinearLayout>
     </ScrollView>
 

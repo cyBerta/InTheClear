@@ -174,7 +174,7 @@ public class SetupWizardActivity extends AppCompatActivity {
                 case 1:
                     return new ViewPagerFragment1();
                 case 2:
-                    return new ViewPagerFragment0();
+                    return new ViewPagerFragment2();
                 case 3:
                     return new ViewPagerFragment0();
                 case 4:

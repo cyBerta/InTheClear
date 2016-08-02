@@ -86,7 +86,7 @@
     <string-array name="WIZARD_TEXT">
         <item>InTheClear helps keep you safer in difficult situations by sending emergency SMS messages and wiping data off your phone at your command.\n\nThis one-time wizard will help you set up your phone to work properly in an emergency situation.</item>
         <item>InTheClear sends emergency SMSes to your choice of recipients(s).  To make sure we will be able to send an emergency SMS, first send a test message to yourself.  Just enter your mobile phone number below and select Send.</item>
-        <item>Now that we\'ve tested Emergency SMS, we will personalize your actual message and recipients.  To send to multiple recipients, separate phone numbers with commas.</item>
+        <item>Now that we\'ve tested Emergency SMS, we will define the recipients. To send to multiple recipients, separate phone numbers with commas.</item>
         <item>InTheClear can wipe data off your phone\'s memory when you activate it.  Select what data you want to erase below</item>
         <item>One-Touch Panic is a feature of InTheClear that activates Emergency SMS and Data Wipe.  To avoid accidental usage, the default setting requires you to confirm activation once you start One-Touch Panic.  You can remove this prompt with the setting below.</item>
         <item>Thanks for setting up InTheClear.  Remember that you can activate its features manually from within the app, or run them right away using One-Touch Panic shortcuts.</item>
